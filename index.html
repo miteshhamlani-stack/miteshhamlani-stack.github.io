@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SBISIF enterprise applications portal">
+    <title>SBISIF Apps Portal</title>
+    <style>
+      :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b1020;color:#e6e9f4}
+      *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 75% -10%,#674eb638,transparent 34rem),radial-gradient(circle at 5% 30%,#294f9c21,transparent 30rem),#0b1020}
+      .wrap{width:min(1120px,calc(100% - 48px));margin:auto}.header{height:82px;border-bottom:1px solid #adb7db1f;display:flex;align-items:center;justify-content:space-between}
+      .brand{display:flex;align-items:center;gap:11px;color:#f7f8ff;text-decoration:none;font-size:15px;font-weight:700}.mark{display:grid;place-items:center;width:30px;height:30px;border:1px solid #b8a4ff80;border-radius:9px;background:linear-gradient(145deg,#5863d9,#8b5ed3);box-shadow:0 0 22px #6f5cdc5c}
+      .muted,.count{color:#8d96b2;font-size:11px;letter-spacing:.3px}.main{padding:88px 0 110px}.eyebrow{margin:0 0 14px;color:#9c8bf1;font-size:10px;font-weight:800;letter-spacing:1.8px}.hero{max-width:650px}
+      h1{margin:0;color:#f7f8ff;font-size:clamp(42px,6vw,70px);letter-spacing:-3.2px;line-height:1.03}h1 span{color:#9380e6}.intro{max-width:520px;margin:25px 0 0;color:#9ca6c2;font-size:16px;line-height:1.65}
+      .tools{margin-top:105px}.section{display:flex;align-items:end;justify-content:space-between;margin-bottom:20px}h2{margin:0;color:#f7f8ff;font-size:22px;letter-spacing:-.6px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+      .card{min-height:300px;padding:24px;display:flex;flex-direction:column;border:1px solid #929dc62e;border-radius:14px;background:#151d34c7;text-decoration:none;color:inherit;transition:.18s}.card.live:hover{transform:translateY(-5px);border-color:#8b71ed;border-style:solid;box-shadow:0 14px 42px #04071261,0 0 28px #6f52d62e}.planned{border-style:dashed;background:#11182c73}
+      .top{display:flex;justify-content:space-between}.status{color:#818ba8;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}.live .status{color:#73cfad}.dot{display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:#6d7690}.live .dot{background:#62cba6;box-shadow:0 0 10px #62cba6}.arrow{color:#a28ef2;font-size:20px}
+      h3{margin:47px 0 10px;color:#f5f6ff;font-size:20px;letter-spacing:-.5px}.planned h3{color:#bec4d7}.card p{margin:0;color:#9ca6c2;font-size:13px;line-height:1.55}.detail{margin-top:18px;color:#b6b9d1;font-size:12px;line-height:1.55}.open{margin-top:auto;padding-top:21px;color:#a995f4;font-size:12px;font-weight:750}
+      footer{display:flex;justify-content:space-between;padding:20px 0 28px;border-top:1px solid #adb7db1f;color:#68728e;font-size:10px}
+      @media(max-width:760px){.wrap{width:min(100% - 32px,560px)}.muted{display:none}.main{padding-top:60px}h1{letter-spacing:-2px}.tools{margin-top:70px}.grid{grid-template-columns:1fr}.card{min-height:240px}footer{display:grid;gap:8px}}
+    </style>
+  </head>
+  <body>
+    <header class="wrap header"><a class="brand" href="/" aria-label="SBISIF Apps Portal home"><span class="mark">S</span><span>SBISIF Apps Portal</span></a><span class="muted">Financial technology suite</span></header>
+    <main class="wrap main">
+      <section class="hero"><p class="eyebrow">SBISIF DIGITAL WORKSPACE</p><h1>One secure home for<br><span>smarter fund operations.</span></h1><p class="intro">Purpose-built applications for compliant, efficient investor communication across the mutual fund ecosystem.</p></section>
+      <section class="tools" aria-labelledby="apps"><div class="section"><div><p class="eyebrow">YOUR WORKSPACE</p><h2 id="apps">Applications</h2></div><span class="count">01 live · 02 planned</span></div>
+        <div class="grid">
+          <a class="card live" href="/compliance-guard/"><div class="top"><span class="status"><span class="dot"></span>Live</span><span class="arrow">↗</span></div><h3>Compliance Guard</h3><p>SEBI &amp; AMFI advertisement compliance auditing platform for MFDs and AMCs.</p><div class="detail">Automated pre-release audit for creatives, PDFs, and video reels. Verifies mandatory disclaimers, fonts, performance disclosures, and generates audit certificates.</div><span class="open">Open application&nbsp; →</span></a>
+          <div class="card planned"><div class="top"><span class="status"><span class="dot"></span>Coming soon</span></div><h3>Factsheet Validator</h3><p>Review scheme factsheets and disclosures with confidence.</p><div class="detail">Planned workspace for validating factsheet data, disclosures, and presentation against current fund-house standards.</div></div>
+          <div class="card planned"><div class="top"><span class="status"><span class="dot"></span>Coming soon</span></div><h3>Distributor Portal</h3><p>A central workspace for distributor communications and approvals.</p><div class="detail">Planned tools for campaign collaboration, review workflows, and compliance-ready publishing.</div></div>
+        </div>
+      </section>
+    </main>
+    <footer class="wrap"><span>© 2026 SBISIF Apps</span><span>Internal enterprise workspace · Access subject to applicable permissions and policies.</span></footer>
+  </body>
+</html>
