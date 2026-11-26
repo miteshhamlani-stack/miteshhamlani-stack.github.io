@@ -16,6 +16,7 @@ import { getDocumentLabels } from './documentLabels'
 import { matchAddendumText, parseAddendumFiles } from './parsers/addendumBatchParser'
 import { parseCompleteLeadDocuments } from './parsers/fullDocumentParser'
 import { starterCirculars, starterDocumentNodes, starterNotices } from './parsers/starterCirculars'
+import { validateDocumentAgainstCircular } from './parsers/circularValidator'
 import { createRedline, findBestExcerpt, replaceBestExcerpt } from './circulars/reconcilerEngine'
 import {
   createAuditCsv,
@@ -23,8 +24,14 @@ import {
   getCompleteDocumentText,
   reconciledFileName,
 } from './fullDocExporter'
-import type { AmendmentNotice, CircularFramework, DocumentNode, ReconcilerWorkspaceData } from './types'
-import { isWorkspaceData } from './validation'
+import type {
+  AmendmentNotice,
+  CircularFramework,
+  CircularValidationItem,
+  DocumentNode,
+  ReconcilerWorkspaceData,
+} from './types'
+import { isWorkspaceData, migrateWorkspaceData } from './validation'
 import './DocumentReconcilerWorkbench.css'
 
 const STORAGE_KEY = 'document-reconciler-full-document-v3'
@@ -57,6 +64,14 @@ function currentTimestamp(): string {
 
 function normalize(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+}
+
+function appendUniqueText(current: string, addition: string): string {
+  const normalizedAddition = normalize(addition)
+  if (!normalizedAddition || normalize(current).includes(normalizedAddition)) return current
+  return current.trim()
+    ? `${current.trimEnd()}\n\n${addition.trim()}`
+    : addition.trim()
 }
 
 function sameSection(first: DocumentNode, second: DocumentNode): boolean {
@@ -101,7 +116,7 @@ function loadStoredWorkspace(): { workspace: ReconcilerWorkspaceData; writable: 
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (!saved) return { workspace: { frameworks: [], documentNodes: [], notices: [] }, writable: true, error: '' }
-    const parsed: unknown = JSON.parse(saved)
+    const parsed = migrateWorkspaceData(JSON.parse(saved))
     if (!isWorkspaceData(parsed)) throw new Error('Stored workspace data has an invalid format.')
     return { workspace: parsed, writable: true, error: '' }
   } catch (reason) {
@@ -124,8 +139,12 @@ export function DocumentReconcilerWorkbench() {
   const [outlineMode, setOutlineMode] = useState<'impacted' | 'complete'>('complete')
   const [showCircularModal, setShowCircularModal] = useState(false)
   const [editingNoticeId, setEditingNoticeId] = useState<string | null>(null)
+  const [editingMandateId, setEditingMandateId] = useState<string | null>(null)
   const [editingFullNode, setEditingFullNode] = useState(false)
   const [editText, setEditText] = useState('')
+  const [mandateEditText, setMandateEditText] = useState('')
+  const [activeSidebarTab, setActiveSidebarTab] = useState<'amendments' | 'audit'>('amendments')
+  const [selectedMandateId, setSelectedMandateId] = useState('')
   const [uploadsCollapsed, setUploadsCollapsed] = useState(false)
   const [checklistExpanded, setChecklistExpanded] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -139,6 +158,30 @@ export function DocumentReconcilerWorkbench() {
   const framework = frameworks.find((item) => item.id === selectedFrameworkId) ?? starterCirculars[0]
   const nodes = workspace.documentNodes
   const notices = workspace.notices
+  const circularValidationItems = useMemo(() => {
+    const previousItems = workspace.circularValidationItems ?? []
+    return validateDocumentAgainstCircular(nodes, framework, notices).map((item) => {
+      const previous = previousItems.find((saved) => saved.mandate.id === item.mandate.id)
+      const resolutionStatus: CircularValidationItem['resolutionStatus'] = previous?.resolutionStatus === 'waived'
+        ? 'waived'
+        : previous?.resolutionStatus === 'applied' && item.status === 'compliant'
+          ? 'applied'
+          : 'unresolved'
+      return { ...item, resolutionStatus }
+    })
+  }, [framework, nodes, notices, workspace.circularValidationItems])
+  const selectedCircularValidationItem = circularValidationItems.find(
+    (item) => item.mandate.id === selectedMandateId,
+  ) ?? circularValidationItems.find((item) => item.status !== 'compliant' && item.resolutionStatus === 'unresolved')
+    ?? circularValidationItems[0]
+  const selectedCircularNode = selectedCircularValidationItem?.matchedNodeId
+    ? nodes.find((node) => node.id === selectedCircularValidationItem.matchedNodeId)
+    : undefined
+  const circularValidationCounts = {
+    compliant: circularValidationItems.filter((item) => item.status === 'compliant').length,
+    needsUpdate: circularValidationItems.filter((item) => item.status === 'needs_update').length,
+    missing: circularValidationItems.filter((item) => item.status === 'missing').length,
+  }
   const reviewedNoticeCount = notices.filter((notice) => notice.status !== 'pending').length
   const unmatchedNoticeCount = notices.filter((notice) => !notice.targetNodeId).length
   const impactedNodeIds = useMemo(() => new Set(nodes
@@ -213,6 +256,7 @@ export function DocumentReconcilerWorkbench() {
         ...current,
         documentNodes: parsedNodes,
         notices: [],
+        circularValidationItems: [],
         primaryFileName: nextFiles.primary?.name,
         secondaryFileName: nextFiles.secondary?.name,
         isSampleMode: false,
@@ -285,6 +329,7 @@ export function DocumentReconcilerWorkbench() {
       ...current,
       documentNodes: [],
       notices: [],
+      circularValidationItems: [],
       primaryFileName: undefined,
       secondaryFileName: undefined,
       isSampleMode: false,
@@ -394,7 +439,9 @@ export function DocumentReconcilerWorkbench() {
       }
     })
     setSelectedNoticeId(noticeId)
+    setSelectedMandateId('')
     setSelectedNodeId(target.id)
+    setActiveSidebarTab('amendments')
     setReconciliationMessage('')
   }
 
@@ -428,6 +475,8 @@ export function DocumentReconcilerWorkbench() {
     )
     setSelectedNoticeId(comparedNotices[0]?.id ?? '')
     setSelectedNodeId(comparedNotices.find((notice) => notice.targetNodeId)?.targetNodeId ?? '')
+    setSelectedMandateId('')
+    setActiveSidebarTab('amendments')
     setOutlineMode('impacted')
     setUploadsCollapsed(true)
     window.requestAnimationFrame(() => {
@@ -480,6 +529,88 @@ export function DocumentReconcilerWorkbench() {
     }))
   }
 
+  function saveMandateEdit(item: CircularValidationItem): void {
+    if (!mandateEditText.trim()) {
+      setUploadError('Circular clause text cannot be empty.')
+      return
+    }
+    commitWorkspace((current) => ({
+      ...current,
+      circularClauseEdits: {
+        ...current.circularClauseEdits,
+        [item.mandate.id]: mandateEditText.trim(),
+      },
+    }))
+    setEditingMandateId(null)
+    setUploadError('')
+  }
+
+  function resolveCircularMandate(item: CircularValidationItem, resolutionStatus: 'applied' | 'waived'): void {
+    commitWorkspace((current) => ({
+      ...current,
+      circularValidationItems: [
+        ...(current.circularValidationItems ?? []).filter((saved) => saved.mandate.id !== item.mandate.id),
+        { ...item, resolutionStatus },
+      ],
+    }))
+  }
+
+  function applyCircularUpdate(item: CircularValidationItem): void {
+    const insertionText = (
+      workspace.circularClauseEdits?.[item.mandate.id]
+      ?? item.mandate.suggestedInsertionText
+    ).trim()
+    if (!insertionText) {
+      setUploadError('Circular clause text cannot be empty.')
+      return
+    }
+    const hasPairedContent = Boolean(workspace.secondaryFileName)
+      || nodes.some((node) => Boolean(node.pairedDocContent?.length))
+    commitWorkspace((current) => {
+      const target = item.matchedNodeId
+        ? current.documentNodes.find((node) => node.id === item.matchedNodeId)
+        : undefined
+      let documentNodes: DocumentNode[]
+      if (target) {
+        documentNodes = current.documentNodes.map((node) => node.id !== target.id ? node : ({
+          ...node,
+          fullContent: appendUniqueText(node.fullContent, insertionText),
+          ...(hasPairedContent
+            ? { pairedDocContent: appendUniqueText(node.pairedDocContent ?? '', insertionText) }
+            : {}),
+          isImpacted: true,
+        }))
+      } else {
+        const orderIndex = Math.max(-1, ...current.documentNodes.map((node) => node.orderIndex)) + 1
+        documentNodes = [...current.documentNodes, {
+          id: `circular-${item.mandate.id}`,
+          orderIndex,
+          headingPath: `${item.mandate.clauseRef} ${item.mandate.title}`.trim(),
+          sectionCode: item.mandate.clauseRef,
+          title: item.mandate.title,
+          fullContent: insertionText,
+          ...(hasPairedContent ? { pairedDocContent: insertionText } : {}),
+          isImpacted: true,
+        }]
+      }
+      return {
+        ...current,
+        documentNodes,
+        circularValidationItems: [
+          ...(current.circularValidationItems ?? []).filter((saved) => saved.mandate.id !== item.mandate.id),
+          { ...item, resolutionStatus: 'applied' },
+        ],
+      }
+    })
+    const targetNode = item.matchedNodeId
+      ? nodes.find((node) => node.id === item.matchedNodeId)
+      : undefined
+    setSelectedNodeId(targetNode?.id ?? `circular-${item.mandate.id}`)
+    setSelectedMandateId(item.mandate.id)
+    setActiveSidebarTab('audit')
+    setUploadError('')
+  }
+
   function saveFramework(next: CircularFramework): void {
     setReconciliationMessage('')
     commitWorkspace((current) => ({
@@ -487,6 +618,7 @@ export function DocumentReconcilerWorkbench() {
       frameworks: [...current.frameworks.filter((item) => item.id !== next.id), next],
       documentNodes: [],
       notices: [],
+      circularValidationItems: [],
       primaryFileName: undefined,
       secondaryFileName: undefined,
       isSampleMode: false,
@@ -509,6 +641,7 @@ export function DocumentReconcilerWorkbench() {
       ...current,
       documentNodes: [],
       notices: [],
+      circularValidationItems: [],
       primaryFileName: undefined,
       secondaryFileName: undefined,
       isSampleMode: false,
@@ -527,6 +660,7 @@ export function DocumentReconcilerWorkbench() {
       ...current,
       documentNodes: starterDocumentNodes,
       notices: starterNotices,
+      circularValidationItems: [],
       primaryFileName: 'Sample Primary Lead Document.txt',
       secondaryFileName: 'Sample Paired Summary Document.txt',
       isSampleMode: true,
@@ -544,6 +678,7 @@ export function DocumentReconcilerWorkbench() {
       ...current,
       documentNodes: [],
       notices: [],
+      circularValidationItems: [],
       primaryFileName: undefined,
       secondaryFileName: undefined,
       isSampleMode: false,
@@ -564,7 +699,11 @@ export function DocumentReconcilerWorkbench() {
         const secondary = await createReconciledDocx(nodes, 1, pairedLabels[1], framework.name)
         downloadBlob(reconciledFileName(workspace.secondaryFileName ?? leadFiles.secondary?.name, 1), secondary)
       }
-      downloadText('document-reconciler-audit.csv', createAuditCsv(notices), 'text/csv;charset=utf-8')
+      downloadText(
+        'document-reconciler-audit.csv',
+        createAuditCsv(notices, circularValidationItems),
+        'text/csv;charset=utf-8',
+      )
       setUploadError('')
     } catch (reason) {
       setUploadError(reason instanceof Error ? reason.message : 'Complete document export failed.')
@@ -763,7 +902,9 @@ export function DocumentReconcilerWorkbench() {
             {outlineNodes.map((node) => (
               <button type="button" key={node.id} className={`reconciler-section-item${selectedNode?.id === node.id ? ' active' : ''}${impactedNodeIds.has(node.id) ? ' impacted' : ''}`} onClick={() => {
                 setSelectedNodeId(node.id)
+                setSelectedMandateId('')
                 setSelectedNoticeId(notices.find((notice) => noticeAppliesToNode(notice, node, nodes))?.id ?? '')
+                setActiveSidebarTab('amendments')
                 setEditingFullNode(false)
               }}>
                 <span className="reconciler-section-code">{node.sectionCode || `Block ${node.orderIndex + 1}`}</span><span>{node.title}</span>
@@ -771,37 +912,172 @@ export function DocumentReconcilerWorkbench() {
             ))}
             {outlineNodes.length === 0 && <p className="reconciler-empty">{outlineMode === 'impacted' ? 'No impacted sections yet.' : 'Upload a lead document or preview the sample workspace.'}</p>}
           </div>
-          <div className="reconciler-panel-heading reconciler-queue-heading"><h2>Amendment Notices</h2><span>{notices.length}</span></div>
-          <div className="reconciler-notice-list">
-            {notices.length === 0 && <p className="reconciler-empty">Load amendment notices to begin review.</p>}
-            {notices.map((notice) => (
-              <div className={`reconciler-notice-item${selectedNotice?.id === notice.id ? ' active' : ''}`} key={notice.id}>
-                <button type="button" className="reconciler-notice-select" onClick={() => {
-                  setSelectedNoticeId(notice.id)
-                  setSelectedNodeId(notice.targetNodeId)
-                  setEditingFullNode(false)
-                }}>
-                  <span className={`reconciler-status-badge ${notice.status}`}>{statusLabel(notice.status)}</span>
-                  <strong>{notice.noticeNumber}</strong>
-                  <small>{notice.fileName} · {notice.impactedScope}</small>
-                </button>
-                <button type="button" className="reconciler-icon-button" aria-label={`Remove ${notice.fileName}`} onClick={() => removeNotice(notice.id)}><X size={14} /></button>
-                {!notice.targetNodeId && (
-                  <label className="reconciler-unmatched-picker">
-                    <span>Unmatched — Select Target Section</span>
-                    <select value="" onChange={(event) => assignNoticeTarget(notice.id, event.target.value)}>
-                      <option value="">Choose a section…</option>
-                      {nodes.filter((node) => node.fullContent || node.pairedDocContent).map((node) => (
-                        <option key={node.id} value={node.id}>{node.sectionCode ? `${node.sectionCode} · ` : ''}{node.title}</option>
-                      ))}
-                    </select>
-                  </label>
-                )}
-              </div>
-            ))}
+          <div className="reconciler-audit-tabs" role="tablist" aria-label="Review queues">
+            <button type="button" role="tab" aria-selected={activeSidebarTab === 'amendments'} onClick={() => setActiveSidebarTab('amendments')}>
+              Amendments <span>{notices.length}</span>
+            </button>
+            <button type="button" role="tab" aria-selected={activeSidebarTab === 'audit'} onClick={() => setActiveSidebarTab('audit')}>
+              Circular Audit <span>{circularValidationItems.length}</span>
+            </button>
           </div>
+          {activeSidebarTab === 'amendments' ? (
+            <>
+              <div className="reconciler-panel-heading reconciler-queue-heading"><h2>Amendment Notices</h2><span>{notices.length}</span></div>
+              <div className="reconciler-notice-list">
+                {notices.length === 0 && <p className="reconciler-empty">Load amendment notices to begin review.</p>}
+                {notices.map((notice) => (
+                  <div className={`reconciler-notice-item${selectedNotice?.id === notice.id ? ' active' : ''}`} key={notice.id}>
+                    <button type="button" className="reconciler-notice-select" onClick={() => {
+                      setSelectedNoticeId(notice.id)
+                      setSelectedMandateId('')
+                      setSelectedNodeId(notice.targetNodeId)
+                      setEditingFullNode(false)
+                    }}>
+                      <span className={`reconciler-status-badge ${notice.status}`}>{statusLabel(notice.status)}</span>
+                      <strong>{notice.noticeNumber}</strong>
+                      <small>{notice.fileName} · {notice.impactedScope}</small>
+                    </button>
+                    <button type="button" className="reconciler-icon-button" aria-label={`Remove ${notice.fileName}`} onClick={() => removeNotice(notice.id)}><X size={14} /></button>
+                    {!notice.targetNodeId && (
+                      <label className="reconciler-unmatched-picker">
+                        <span>Unmatched — Select Target Section</span>
+                        <select value="" onChange={(event) => assignNoticeTarget(notice.id, event.target.value)}>
+                          <option value="">Choose a section…</option>
+                          {nodes.filter((node) => node.fullContent || node.pairedDocContent).map((node) => (
+                            <option key={node.id} value={node.id}>{node.sectionCode ? `${node.sectionCode} · ` : ''}{node.title}</option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="reconciler-audit-summary" aria-label="Master Circular validation summary">
+                <span className="compliant">Compliant ({circularValidationCounts.compliant})</span>
+                <span className="needs_update">Needs Update ({circularValidationCounts.needsUpdate})</span>
+                <span className="missing">Missing ({circularValidationCounts.missing})</span>
+              </div>
+              <div className="reconciler-mandate-list">
+                {circularValidationItems.length === 0 && <p className="reconciler-empty">No actionable mandates are defined for this Master Circular.</p>}
+                {circularValidationItems.map((item) => (
+                  <button
+                    type="button"
+                    className={`reconciler-mandate-item${selectedCircularValidationItem?.mandate.id === item.mandate.id ? ' active' : ''}`}
+                    key={item.mandate.id}
+                    onClick={() => {
+                      setSelectedMandateId(item.mandate.id)
+                      setSelectedNoticeId('')
+                      setSelectedNodeId(item.matchedNodeId ?? '')
+                      setEditingFullNode(false)
+                    }}
+                  >
+                    <span className={`reconciler-mandate-status ${item.status}`}>{item.status.replace('_', ' ')}</span>
+                    {item.resolutionStatus !== 'unresolved' && <span className="reconciler-resolution-status">{item.resolutionStatus}</span>}
+                    <strong>{item.mandate.clauseRef} · {item.mandate.title}</strong>
+                    <small>{item.matchedHeading ?? 'Not Found in Lead Document'}</small>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </aside>
 
+        {activeSidebarTab === 'audit' ? (
+          <section className="reconciler-review-panel reconciler-circular-audit-panel">
+            <div className="reconciler-panel-heading reconciler-review-heading">
+              <div>
+                <p className="reconciler-eyebrow">MASTER CIRCULAR CLAUSE AUDIT</p>
+                <h2>{selectedCircularValidationItem
+                  ? `${selectedCircularValidationItem.mandate.clauseRef} · ${selectedCircularValidationItem.mandate.title}`
+                  : 'No actionable mandates'}</h2>
+              </div>
+              {selectedCircularValidationItem && (
+                <span className={`reconciler-mandate-status ${selectedCircularValidationItem.status}`}>
+                  {selectedCircularValidationItem.status.replace('_', ' ')}
+                </span>
+              )}
+            </div>
+            {selectedCircularValidationItem ? (
+              <>
+                <div className="reconciler-audit-comparison">
+                  <article>
+                    <h3>Master Circular Requirement</h3>
+                    <p>{selectedCircularValidationItem.mandate.requirementText}</p>
+                    <small>Suggested clause: {workspace.circularClauseEdits?.[selectedCircularValidationItem.mandate.id]
+                      ?? selectedCircularValidationItem.mandate.suggestedInsertionText}</small>
+                  </article>
+                  <article>
+                    <h3>Lead Document Section</h3>
+                    <p className="reconciler-audit-section-title">
+                      {selectedCircularValidationItem.matchedHeading ?? 'Not Found in Lead Document'}
+                    </p>
+                    {selectedCircularNode?.fullContent
+                      ? <pre>{selectedCircularNode.fullContent}</pre>
+                      : <p className="reconciler-audit-not-found">Not Found in Lead Document</p>}
+                  </article>
+                </div>
+                {selectedCircularValidationItem.missingPhrases.length > 0 && (
+                  <div className="reconciler-audit-missing-phrases">
+                    <strong>Required phrases not found</strong>
+                    <ul>{selectedCircularValidationItem.missingPhrases.map((phrase) => <li key={phrase}>{phrase}</li>)}</ul>
+                  </div>
+                )}
+                {editingMandateId === selectedCircularValidationItem.mandate.id ? (
+                  <div className="reconciler-inline-editor">
+                    <label htmlFor="circular-clause-editor">Edit circular update text</label>
+                    <textarea
+                      id="circular-clause-editor"
+                      rows={7}
+                      value={mandateEditText}
+                      onChange={(event) => setMandateEditText(event.target.value)}
+                    />
+                    <div>
+                      <button type="button" className="reconciler-button reconciler-button-secondary" onClick={() => setEditingMandateId(null)}>Cancel</button>
+                      <button type="button" className="reconciler-button reconciler-button-primary" onClick={() => saveMandateEdit(selectedCircularValidationItem)}>Save clause edit</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="reconciler-review-actions reconciler-audit-actions">
+                    {selectedCircularValidationItem.resolutionStatus !== 'unresolved' && (
+                      <span className="reconciler-review-time">Resolution: {selectedCircularValidationItem.resolutionStatus}</span>
+                    )}
+                    <button
+                      type="button"
+                      className="reconciler-button reconciler-button-secondary"
+                      onClick={() => {
+                        setMandateEditText(
+                          workspace.circularClauseEdits?.[selectedCircularValidationItem.mandate.id]
+                          ?? selectedCircularValidationItem.mandate.suggestedInsertionText,
+                        )
+                        setEditingMandateId(selectedCircularValidationItem.mandate.id)
+                      }}
+                    ><Pencil size={15} /> Edit Clause</button>
+                    <button
+                      type="button"
+                      className="reconciler-button reconciler-button-secondary"
+                      disabled={!hasLeadDocument}
+                      onClick={() => applyCircularUpdate(selectedCircularValidationItem)}
+                    ><Check size={15} /> Apply Circular Update</button>
+                    <button
+                      type="button"
+                      className="reconciler-button reconciler-button-primary"
+                      onClick={() => resolveCircularMandate(selectedCircularValidationItem, 'waived')}
+                    >Mark Verified / Waive</button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="reconciler-empty-state">
+                <ShieldCheck size={28} />
+                <p>This Master Circular has no extracted mandates.</p>
+                <span>Upload a circular containing numbered requirements to build its clause audit.</span>
+              </div>
+            )}
+          </section>
+        ) : (
         <section className="reconciler-review-panel">
           <div className="reconciler-panel-heading reconciler-review-heading">
             <div><p className="reconciler-eyebrow">{selectedNotice ? 'AMENDMENT REVIEW' : 'COMPLETE DOCUMENT BLOCK'}</p><h2>{selectedNotice?.noticeNumber ?? selectedNode?.title ?? 'No document selected'}</h2></div>
@@ -853,6 +1129,7 @@ export function DocumentReconcilerWorkbench() {
             </>
           ) : <div className="reconciler-empty-state"><FileText size={28} /><p>No document loaded.</p><span>Upload a primary lead document or choose Preview Sample Workspace.</span></div>}
         </section>
+        )}
 
         <aside className="reconciler-preview-panel reconciler-full-preview-panel">
           <div className="reconciler-panel-heading"><div><p className="reconciler-eyebrow">LIVE COMPLETE-DOCUMENT PREVIEW</p><h2>Reconciled documents</h2></div></div>

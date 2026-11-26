@@ -1,4 +1,100 @@
-import type { AmendmentNotice, CircularFramework, DocumentNode } from '../types'
+import type { AmendmentNotice, CircularFramework, CircularMandate, DocumentNode } from '../types'
+
+const sebiMandates: CircularMandate[] = [
+  {
+    id: 'sebi-riskometer-monthly',
+    clauseRef: 'Clause 3.2',
+    title: 'Risk-o-meter labelling and monthly update',
+    requirementText: 'The scheme Risk-o-meter and benchmark Risk-o-meter must use the prescribed labels and be updated monthly. Any change must be communicated to unitholders within 3 working days.',
+    keywords: ['risk-o-meter', 'benchmark risk-o-meter', 'monthly update', 'unitholder communication'],
+    mandatoryPhrases: ['scheme Risk-o-meter', 'benchmark Risk-o-meter', 'updated monthly', 'within 3 working days'],
+    suggestedInsertionText: 'Display the scheme Risk-o-meter and benchmark Risk-o-meter using the prescribed labels. Both Risk-o-meters must be updated monthly. Communicate any change to unitholders within 3 working days.',
+  },
+  {
+    id: 'sebi-half-yearly-portfolio',
+    clauseRef: 'Clause 5.4',
+    title: 'Half-yearly portfolio disclosure',
+    requirementText: 'The complete portfolio must be disclosed half-yearly within 2 months after the end of each half-year.',
+    keywords: ['complete portfolio', 'half-yearly disclosure', 'within 2 months'],
+    mandatoryPhrases: ['complete portfolio', 'half-yearly', 'within 2 months'],
+    suggestedInsertionText: 'Disclose the complete portfolio on a half-yearly basis within 2 months after the end of each half-year.',
+  },
+  {
+    id: 'sebi-fundamental-attributes',
+    clauseRef: 'Regulation 18(15A)',
+    title: 'Fundamental Attributes change table',
+    requirementText: 'A change to the fundamental attributes must be disclosed in a clear comparison table, with the reason for the change and the applicable investor exit option.',
+    keywords: ['fundamental attributes', 'comparison table', 'reason for change', 'investor exit option'],
+    mandatoryPhrases: ['fundamental attributes', 'comparison table', 'reason for the change', 'investor exit option'],
+    suggestedInsertionText: 'Present every change to the fundamental attributes in a comparison table showing the existing and revised attributes, the reason for the change, and the applicable investor exit option.',
+  },
+  {
+    id: 'sebi-ter-exit-load',
+    clauseRef: 'Clause 7.1',
+    title: 'Total Expense Ratio and exit-load clarity',
+    requirementText: 'The Total Expense Ratio and applicable exit load must be clearly disclosed with the relevant rate, holding period, and redemption conditions.',
+    keywords: ['total expense ratio', 'TER', 'exit load', 'holding period', 'redemption conditions'],
+    mandatoryPhrases: ['Total Expense Ratio', 'applicable exit load', 'holding period', 'redemption conditions'],
+    suggestedInsertionText: 'Clearly disclose the Total Expense Ratio and applicable exit load, including the rate, the relevant holding period, and the redemption conditions.',
+  },
+  {
+    id: 'sebi-investor-grievance',
+    clauseRef: 'Format D',
+    title: 'Investor service and grievance redressal details',
+    requirementText: 'Investor service centre contact details and the grievance redressal process must be disclosed, including the designated contact channels.',
+    keywords: ['investor service centre', 'grievance redressal', 'contact details', 'contact channels'],
+    mandatoryPhrases: ['Investor Service Centre', 'grievance redressal process', 'contact details'],
+    suggestedInsertionText: 'Provide the Investor Service Centre contact details and explain the grievance redressal process, including the designated email, telephone, and postal contact channels.',
+  },
+]
+
+const rbiMandates: CircularMandate[] = [
+  {
+    id: 'rbi-key-facts-statement',
+    clauseRef: 'Section 4',
+    title: 'Key Facts Statement and annual percentage rate',
+    requirementText: 'A Key Facts Statement must disclose the annual percentage rate, all charges, and the repayment schedule before the loan agreement is executed.',
+    keywords: ['Key Facts Statement', 'annual percentage rate', 'all charges', 'repayment schedule'],
+    mandatoryPhrases: ['Key Facts Statement', 'annual percentage rate', 'all charges', 'repayment schedule'],
+    suggestedInsertionText: 'Provide the borrower with a Key Facts Statement disclosing the annual percentage rate, all charges, and the repayment schedule before execution of the loan agreement.',
+  },
+  {
+    id: 'rbi-interest-calculation',
+    clauseRef: 'Section 5.2',
+    title: 'Interest-rate basis and calculation',
+    requirementText: 'The interest rate, its basis of calculation, and the reset conditions must be disclosed in the sanction letter and loan agreement.',
+    keywords: ['interest rate', 'basis of calculation', 'reset conditions', 'sanction letter'],
+    mandatoryPhrases: ['interest rate', 'basis of calculation', 'reset conditions', 'sanction letter'],
+    suggestedInsertionText: 'State the interest rate, its basis of calculation, and the reset conditions in the sanction letter and loan agreement.',
+  },
+  {
+    id: 'rbi-penal-charges',
+    clauseRef: 'Section 6.1',
+    title: 'Penal charges disclosure',
+    requirementText: 'Penal charges must be disclosed separately from the interest rate and must not be added to the principal as additional interest.',
+    keywords: ['penal charges', 'interest rate', 'principal', 'additional interest'],
+    mandatoryPhrases: ['penal charges', 'separately from the interest rate', 'not be added to the principal'],
+    suggestedInsertionText: 'Disclose penal charges separately from the interest rate. Penal charges must not be added to the principal as additional interest.',
+  },
+  {
+    id: 'rbi-grievance-officer',
+    clauseRef: 'Section 8',
+    title: 'Grievance redressal officer and escalation',
+    requirementText: 'The grievance redressal officer contact details and the escalation process must be disclosed to the borrower.',
+    keywords: ['grievance redressal officer', 'contact details', 'escalation process', 'borrower'],
+    mandatoryPhrases: ['grievance redressal officer', 'contact details', 'escalation process'],
+    suggestedInsertionText: 'Disclose the grievance redressal officer contact details and the escalation process for an unresolved complaint.',
+  },
+  {
+    id: 'rbi-agreement-copy',
+    clauseRef: 'Format A',
+    title: 'Executed agreement and enclosure copy',
+    requirementText: 'A copy of the executed loan agreement and all enclosures must be furnished to the borrower.',
+    keywords: ['executed loan agreement', 'enclosures', 'furnished', 'borrower'],
+    mandatoryPhrases: ['executed loan agreement', 'all enclosures', 'furnished to the borrower'],
+    suggestedInsertionText: 'A copy of the executed loan agreement must be furnished to the borrower with all enclosures.',
+  },
+]
 
 export const starterCirculars: CircularFramework[] = [
   {
@@ -14,6 +110,7 @@ export const starterCirculars: CircularFramework[] = [
       { code: 'Section 3', title: 'Fund Manager', keywords: ['fund manager', 'portfolio manager', 'experience'], mandatoryRule: 'Disclose the fund manager and relevant experience.' },
       { code: 'Section 4', title: 'Minimum Application', keywords: ['minimum application', 'minimum investment', 'subscription'], mandatoryRule: 'Disclose minimum application amounts and subsequent investment increments.' },
     ],
+    mandates: sebiMandates,
     complianceChecklist: [
       'Display the scheme Risk-o-meter and benchmark Risk-o-meter in scheme documents.',
       'Update the Risk-o-meter at least every month and communicate a change to investors.',
@@ -33,6 +130,7 @@ export const starterCirculars: CircularFramework[] = [
       { code: 'Chapter 2', title: 'Loan Charges and Fees', keywords: ['charges', 'fees', 'penalty', 'prepayment'], mandatoryRule: 'Disclose applicable charges and fees before loan execution.' },
       { code: 'Chapter 3', title: 'Customer Disclosures and MITC', keywords: ['MITC', 'disclosure', 'borrower', 'customer'], mandatoryRule: 'Provide the borrower with the executed loan agreement and enclosures.' },
     ],
+    mandates: rbiMandates,
     complianceChecklist: [
       'Provide key loan terms and charges to the borrower before execution.',
       'Disclose the annualised interest rate and method of calculation.',

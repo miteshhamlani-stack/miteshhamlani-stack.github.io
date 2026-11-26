@@ -2038,3 +2038,224 @@
     width: 100%;
   }
 }
+
+.reconciler-audit-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  padding: 4px;
+  margin: 14px 0 10px;
+  border: 1px solid var(--sbisif-border);
+  border-radius: 9px;
+  background: #f8fafc;
+}
+
+.reconciler-audit-tabs button {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 5px;
+  color: var(--sbisif-text-muted);
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.reconciler-audit-tabs button[aria-selected="true"] {
+  color: #fff;
+  border-color: var(--sbisif-navy);
+  background: var(--sbisif-navy);
+}
+
+.reconciler-audit-tabs button span {
+  font-size: 9px;
+  opacity: .8;
+}
+
+.reconciler-audit-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0 0 10px;
+}
+
+.reconciler-audit-summary span,
+.reconciler-mandate-status,
+.reconciler-resolution-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 750;
+  line-height: 1.2;
+  text-transform: capitalize;
+}
+
+.reconciler-audit-summary .compliant,
+.reconciler-mandate-status.compliant {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.reconciler-audit-summary .needs_update,
+.reconciler-mandate-status.needs_update {
+  color: #854d0e;
+  background: #fef3c7;
+}
+
+.reconciler-audit-summary .missing,
+.reconciler-mandate-status.missing {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.reconciler-resolution-status {
+  color: #334155;
+  background: #e2e8f0;
+}
+
+.reconciler-mandate-list {
+  display: grid;
+  gap: 6px;
+}
+
+.reconciler-mandate-item {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  color: var(--sbisif-text);
+  text-align: left;
+  border: 1px solid var(--sbisif-border);
+  border-radius: 8px;
+  background: var(--sbisif-surface);
+  cursor: pointer;
+}
+
+.reconciler-mandate-item.active {
+  border-color: var(--sbisif-navy);
+  box-shadow: inset 3px 0 var(--sbisif-navy);
+}
+
+.reconciler-mandate-item strong,
+.reconciler-mandate-item small {
+  overflow-wrap: anywhere;
+}
+
+.reconciler-mandate-item strong {
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.reconciler-mandate-item small {
+  color: var(--sbisif-text-muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.reconciler-circular-audit-panel {
+  align-content: start;
+}
+
+.reconciler-audit-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.reconciler-audit-comparison article {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid var(--sbisif-border);
+  border-radius: 9px;
+  background: #f8fafc;
+}
+
+.reconciler-audit-comparison h3 {
+  margin: 0 0 9px;
+  color: var(--sbisif-navy);
+  font-size: 11px;
+}
+
+.reconciler-audit-comparison p,
+.reconciler-audit-comparison small {
+  color: var(--sbisif-text-muted);
+  font-size: 11px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.reconciler-audit-comparison article > p:first-of-type {
+  margin-top: 0;
+}
+
+.reconciler-audit-comparison small {
+  display: block;
+  padding-top: 9px;
+  margin-top: 10px;
+  border-top: 1px solid var(--sbisif-border);
+}
+
+.reconciler-audit-comparison pre {
+  max-height: 320px;
+  margin: 8px 0 0;
+  overflow: auto;
+  color: var(--sbisif-text);
+  font: inherit;
+  font-size: 10px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.reconciler-audit-comparison .reconciler-audit-section-title {
+  margin-bottom: 4px;
+  color: var(--sbisif-text);
+  font-weight: 700;
+}
+
+.reconciler-audit-comparison .reconciler-audit-not-found {
+  padding: 12px;
+  border: 1px dashed var(--sbisif-border);
+  border-radius: 7px;
+  background: #fff;
+}
+
+.reconciler-audit-missing-phrases {
+  padding: 12px;
+  margin-top: 10px;
+  color: #854d0e;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: #fffbeb;
+  font-size: 10px;
+}
+
+.reconciler-audit-missing-phrases ul {
+  display: grid;
+  gap: 5px;
+  padding-left: 18px;
+  margin: 8px 0 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.reconciler-audit-actions {
+  margin-top: auto;
+}
+
+@media (max-width: 760px) {
+  .reconciler-audit-comparison {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

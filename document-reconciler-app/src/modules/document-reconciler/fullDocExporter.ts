@@ -1,5 +1,5 @@
 import { Document, Packer, Paragraph, TextRun } from 'docx'
-import type { AmendmentNotice, DocumentNode } from './types'
+import type { AmendmentNotice, CircularValidationItem, DocumentNode } from './types'
 
 export function getCompleteDocumentText(nodes: DocumentNode[], documentIndex: 0 | 1): string {
   return [...nodes]
@@ -32,10 +32,19 @@ function csvCell(value: string): string {
   return `"${safe.replaceAll('"', '""')}"`
 }
 
-export function createAuditCsv(notices: AmendmentNotice[]): string {
+export function createAuditCsv(
+  notices: AmendmentNotice[],
+  circularValidationItems: CircularValidationItem[] = [],
+): string {
   const rows = [
-    ['File Name', 'Notice Number', 'Notice Date', 'Effective Date', 'Impacted Scope', 'Target Heading', 'Original Excerpt', 'Proposed Text', 'Status', 'Reviewed At'],
+    [
+      'Record Type', 'File Name', 'Notice Number', 'Notice Date', 'Effective Date',
+      'Impacted Scope', 'Target Heading', 'Original Excerpt', 'Proposed Text',
+      'Status', 'Reviewed At', 'Clause Reference', 'Requirement',
+      'Validation Status', 'Resolution Status', 'Matched Heading', 'Missing Phrases',
+    ],
     ...notices.map((notice) => [
+      'Amendment',
       notice.fileName,
       notice.noticeNumber,
       notice.noticeDate,
@@ -46,6 +55,18 @@ export function createAuditCsv(notices: AmendmentNotice[]): string {
       notice.proposedText,
       notice.status,
       notice.reviewedAt ?? '',
+      '', '', '', '', '', '',
+    ]),
+    ...circularValidationItems.map((item) => [
+      'Circular Validation',
+      '', '', '', '', '', '', '', '',
+      '', '',
+      item.mandate.clauseRef,
+      item.mandate.requirementText,
+      item.status,
+      item.resolutionStatus,
+      item.matchedHeading ?? '',
+      item.missingPhrases.join('; '),
     ]),
   ]
   return rows.map((row) => row.map(csvCell).join(',')).join('\r\n')

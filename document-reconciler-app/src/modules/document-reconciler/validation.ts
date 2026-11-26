@@ -1,6 +1,8 @@
 import type {
   AmendmentNotice,
   CircularFramework,
+  CircularMandate,
+  CircularValidationItem,
   DocumentNode,
   ExpectedSection,
   ReconcilerWorkspaceData,
@@ -17,6 +19,30 @@ function isExpectedSection(value: unknown): value is ExpectedSection {
     && Array.isArray(value.keywords)
     && value.keywords.every((keyword) => typeof keyword === 'string')
     && (value.mandatoryRule === undefined || typeof value.mandatoryRule === 'string')
+}
+
+function isCircularMandate(value: unknown): value is CircularMandate {
+  if (!isRecord(value)) return false
+  return typeof value.id === 'string'
+    && typeof value.clauseRef === 'string'
+    && typeof value.title === 'string'
+    && typeof value.requirementText === 'string'
+    && Array.isArray(value.keywords)
+    && value.keywords.every((item) => typeof item === 'string')
+    && Array.isArray(value.mandatoryPhrases)
+    && value.mandatoryPhrases.every((item) => typeof item === 'string')
+    && typeof value.suggestedInsertionText === 'string'
+}
+
+function isCircularValidationItem(value: unknown): value is CircularValidationItem {
+  if (!isRecord(value)) return false
+  return isCircularMandate(value.mandate)
+    && (value.status === 'compliant' || value.status === 'needs_update' || value.status === 'missing')
+    && (value.matchedNodeId === undefined || typeof value.matchedNodeId === 'string')
+    && (value.matchedHeading === undefined || typeof value.matchedHeading === 'string')
+    && Array.isArray(value.missingPhrases)
+    && value.missingPhrases.every((item) => typeof item === 'string')
+    && (value.resolutionStatus === 'unresolved' || value.resolutionStatus === 'applied' || value.resolutionStatus === 'waived')
 }
 
 function isDocumentNode(value: unknown): value is DocumentNode {
@@ -45,6 +71,8 @@ function isCircularFramework(value: unknown): value is CircularFramework {
     && value.documentTypes.every((label) => typeof label === 'string')
     && Array.isArray(value.expectedSections)
     && value.expectedSections.every(isExpectedSection)
+    && Array.isArray(value.mandates)
+    && value.mandates.every(isCircularMandate)
     && Array.isArray(value.complianceChecklist)
     && value.complianceChecklist.every((item) => typeof item === 'string')
     && (value.isCustom === undefined || typeof value.isCustom === 'boolean')
@@ -77,7 +105,23 @@ export function isWorkspaceData(value: unknown): value is ReconcilerWorkspaceDat
     && value.documentNodes.every(isDocumentNode)
     && Array.isArray(value.notices)
     && value.notices.every(isAmendmentNotice)
+    && (value.circularValidationItems === undefined
+      || (Array.isArray(value.circularValidationItems) && value.circularValidationItems.every(isCircularValidationItem)))
+    && (value.circularClauseEdits === undefined
+      || (isRecord(value.circularClauseEdits) && Object.values(value.circularClauseEdits).every((item) => typeof item === 'string')))
     && (value.primaryFileName === undefined || typeof value.primaryFileName === 'string')
     && (value.secondaryFileName === undefined || typeof value.secondaryFileName === 'string')
     && (value.isSampleMode === undefined || typeof value.isSampleMode === 'boolean')
+}
+
+export function migrateWorkspaceData(value: unknown): unknown {
+  if (!isRecord(value) || !Array.isArray(value.frameworks)) return value
+  return {
+    ...value,
+    frameworks: value.frameworks.map((framework) => (
+      isRecord(framework) && framework.mandates === undefined
+        ? { ...framework, mandates: [] }
+        : framework
+    )),
+  }
 }

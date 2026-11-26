@@ -20,7 +20,9 @@ export function CircularUploadModal({ onClose, onSave }: CircularUploadModalProp
     setError('')
     try {
       const parsed = await parseMasterCircularFile(file)
-      if (parsed.expectedSections.length === 0) throw new Error('No supported section headings were found in this circular.')
+      if (parsed.expectedSections.length === 0 && parsed.mandates.length === 0) {
+        throw new Error('No supported section headings or actionable requirements were found in this circular.')
+      }
       setFramework(parsed)
     } catch (reason) {
       setFramework(null)
@@ -49,7 +51,7 @@ export function CircularUploadModal({ onClose, onSave }: CircularUploadModalProp
           <div className="reconciler-framework-summary">
             <strong>{framework.name}</strong>
             <span>{framework.authority} · {framework.circularRef}</span>
-            <span>{getDocumentLabels(framework).join(' & ')} · {framework.expectedSections.length} expected sections · {framework.complianceChecklist.length} checks</span>
+            <span>{getDocumentLabels(framework).join(' & ')} · {framework.expectedSections.length} expected sections · {framework.mandates.length} actionable mandates · {framework.complianceChecklist.length} checks</span>
           </div>
         )}
         {error && <p className="reconciler-error" role="alert">{error}</p>}
