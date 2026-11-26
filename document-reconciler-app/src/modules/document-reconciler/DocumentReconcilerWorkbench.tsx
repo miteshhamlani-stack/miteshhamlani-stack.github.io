@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   X,
 } from 'lucide-react'
-import { SbisifSuiteLayout } from '../../components/layout/SbisifSuiteLayout'
+import { ToolShellLayout } from '../../components/layout/ToolShellLayout'
 import { CircularUploadModal } from './CircularUploadModal'
 import { getDocumentLabels } from './documentLabels'
 import { matchAddendumText, parseAddendumFiles } from './parsers/addendumBatchParser'
@@ -589,7 +589,7 @@ export function DocumentReconcilerWorkbench() {
   }
 
   return (
-    <SbisifSuiteLayout activeApp="document-reconciler">
+    <ToolShellLayout title="Document Reconciler">
       <div className="reconciler-app">
       <section className="reconciler-control-panel">
         <div className="reconciler-title-row">
@@ -889,6 +889,6 @@ export function DocumentReconcilerWorkbench() {
 
       {showCircularModal && <CircularUploadModal onClose={() => setShowCircularModal(false)} onSave={saveFramework} />}
       </div>
-    </SbisifSuiteLayout>
+    </ToolShellLayout>
   )
 }

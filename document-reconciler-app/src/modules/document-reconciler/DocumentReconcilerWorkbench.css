@@ -1609,9 +1609,6 @@
   .reconciler-document-pickers {
     grid-template-columns: 1fr;
   }
-  .reconciler-document-slot-dropzone {
-    min-height: 145px;
-  }
   .reconciler-compare-bar {
     align-items: stretch;
     flex-direction: column;
@@ -1625,8 +1622,217 @@
 }
 
 @media (max-width: 460px) {
+  .reconciler-document-pickers {
+    grid-template-columns: 1fr;
+  }
+
   .reconciler-review-progress {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+.reconciler-app {
+  color: var(--foreground);
+}
+
+.reconciler-app :is(h1, h2, h3, h4, strong, label) {
+  color: var(--foreground);
+}
+
+.reconciler-app :is(.reconciler-upload-strip, .reconciler-upload-box, .reconciler-sidebar, .reconciler-review-panel, .reconciler-preview-panel, .reconciler-full-preview-panel, .reconciler-preview-document, .reconciler-modal, .reconciler-framework-summary, .reconciler-review-progress) {
+  color: var(--foreground);
+  border-color: var(--border);
+  background: var(--card);
+  box-shadow: 0 10px 32px rgb(0 0 0 / 18%);
+}
+
+.reconciler-app :is(.reconciler-panel-heading h2, .reconciler-upload-strip-heading h2, .reconciler-upload-box-heading h3, .reconciler-document-slot-heading h4, .reconciler-framework-summary strong, .reconciler-preview-document h3) {
+  color: var(--foreground);
+}
+
+.reconciler-app :is(.reconciler-muted, .reconciler-eyebrow, .reconciler-upload-box-heading p, .reconciler-document-slot-heading p, .reconciler-preview-document h3 span, .reconciler-review-progress > span, .reconciler-upload-summary) {
+  color: var(--muted-foreground);
+}
+
+.reconciler-app :is(.reconciler-select-wrap select, .reconciler-modal-field select, .reconciler-unmatched-picker select, .reconciler-full-editor textarea, .reconciler-modal-field input, .reconciler-form-grid input, .reconciler-form-grid textarea) {
+  color: var(--foreground);
+  border-color: var(--input);
+  background-color: var(--muted);
+}
+
+.reconciler-app :is(.reconciler-document-slot-dropzone, .reconciler-dropzone, .reconciler-compare-bar, .reconciler-outline-toggle button, .reconciler-uploaded-document, .reconciler-file-pill) {
+  color: var(--muted-foreground);
+  border-color: var(--border);
+  background: var(--muted);
+}
+
+.reconciler-app :is(.reconciler-document-slot-dropzone > strong, .reconciler-dropzone > strong, .reconciler-compare-readiness, .reconciler-uploaded-document, .reconciler-file-pill, .reconciler-full-editor label, .reconciler-notice-select) {
+  color: var(--foreground);
+}
+
+.reconciler-app :is(.reconciler-section-item, .reconciler-notice-item, .reconciler-outline-toggle button, .reconciler-notice-select) {
+  color: var(--muted-foreground);
+}
+
+.reconciler-app :is(.reconciler-section-item:hover, .reconciler-notice-item:hover, .reconciler-outline-toggle button:hover) {
+  border-color: var(--border);
+  background: var(--muted);
+}
+
+.reconciler-app :is(.reconciler-section-item.active, .reconciler-notice-item.active, .reconciler-outline-toggle button.active, .reconciler-document-tabs button.active, .reconciler-document-tabs button[aria-selected="true"]) {
+  color: var(--primary);
+  border-color: var(--border);
+  background: var(--accent);
+}
+
+.reconciler-app .reconciler-button-primary {
+  color: var(--primary-foreground);
+  background: var(--primary);
+  box-shadow: 0 8px 24px -12px oklch(0.8 0.14 80 / 60%);
+}
+
+.reconciler-app .reconciler-button-primary:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--primary) 88%, black);
+}
+
+.reconciler-app .reconciler-button-secondary {
+  color: var(--foreground);
+  border-color: var(--border);
+  background: var(--muted);
+}
+
+.reconciler-app .reconciler-button-secondary:hover:not(:disabled) {
+  border-color: var(--ring);
+  background: var(--accent);
+}
+
+.reconciler-app .reconciler-button-danger {
+  color: var(--destructive);
+  border-color: var(--border);
+  background: var(--muted);
+}
+
+.reconciler-app .reconciler-button-danger:hover:not(:disabled) {
+  border-color: var(--destructive);
+  background: color-mix(in oklch, var(--destructive) 14%, var(--card));
+}
+
+.reconciler-app :is(.reconciler-checklist-toggle, .reconciler-sample-banner, .reconciler-framework-summary) {
+  color: var(--foreground);
+  border-color: var(--border);
+  background: var(--card);
+}
+
+.reconciler-app .reconciler-checklist-count {
+  color: var(--primary);
+  background: var(--accent);
+}
+
+.reconciler-app .reconciler-checklist {
+  border-color: var(--border);
+  background: var(--muted);
+}
+
+.reconciler-app .reconciler-checklist li,
+.reconciler-app .reconciler-compare-readiness > span {
+  color: var(--muted-foreground);
+}
+
+.reconciler-app .reconciler-parse-warning,
+.reconciler-app .reconciler-compliance-note,
+.reconciler-app .reconciler-unmatched-picker > span {
+  color: var(--primary);
+  border-color: var(--border);
+  background: var(--accent);
+}
+
+.reconciler-app .reconciler-reconciliation-message {
+  color: var(--secondary);
+  border-color: var(--border);
+  background: var(--accent);
+}
+
+.reconciler-app .reconciler-continuous-reader article.approved-change {
+  background: color-mix(in oklch, var(--secondary) 15%, var(--card));
+}
+
+.reconciler-app .reconciler-continuous-reader pre {
+  color: var(--muted-foreground);
+}
+
+.reconciler-app .reconciler-continuous-reader mark {
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+}
+
+.reconciler-app .reconciler-document-tabs button {
+  color: var(--muted-foreground);
+}
+
+.reconciler-app .reconciler-document-tabs button.active {
+  border-bottom-color: var(--primary);
+}
+
+.reconciler-app :is(.reconciler-section-tag, .reconciler-section-tag.approved, .reconciler-section-count, .reconciler-checklist-toggle > svg:first-child) {
+  color: var(--secondary);
+}
+
+.reconciler-app .reconciler-section-tag {
+  background: var(--accent);
+}
+
+.reconciler-app .reconciler-section-tag.approved,
+.reconciler-app .reconciler-status-badge.approved {
+  color: var(--secondary);
+  background: color-mix(in oklch, var(--secondary) 16%, var(--card));
+}
+
+.reconciler-app :is(.reconciler-section-tag.rejected, .reconciler-status-badge.rejected) {
+  color: var(--destructive);
+  background: color-mix(in oklch, var(--destructive) 14%, var(--card));
+}
+
+.reconciler-app .reconciler-status-badge.pending {
+  color: var(--primary);
+  background: color-mix(in oklch, var(--primary) 16%, var(--card));
+}
+
+.reconciler-app .reconciler-redline {
+  color: var(--muted-foreground);
+  border-color: var(--border);
+  background: var(--muted);
+}
+
+.reconciler-app .reconciler-redline ins {
+  color: var(--secondary);
+  background: color-mix(in oklch, var(--secondary) 20%, var(--card));
+}
+
+.reconciler-app .reconciler-redline del {
+  color: var(--destructive);
+  background: color-mix(in oklch, var(--destructive) 16%, var(--card));
+}
+
+.reconciler-app .reconciler-section-tag.rejected,
+.reconciler-app .reconciler-error {
+  color: var(--destructive);
+}
+
+@media (min-width: 1024px) {
+  .reconciler-upload-boxes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1023px) {
+  .reconciler-upload-boxes {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .reconciler-document-pickers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
