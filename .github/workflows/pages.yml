@@ -25,9 +25,23 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           cname: apps.sbisif.com
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: document-reconciler-app/package-lock.json
+      - name: Install Document Reconciler dependencies
+        run: npm ci --prefix document-reconciler-app
+      - name: Build Document Reconciler
+        run: npm run build --prefix document-reconciler-app
+      - name: Assemble Pages artifact
+        run: |
+          mkdir -p pages-dist/document-reconciler
+          cp index.html CNAME .nojekyll pages-dist/
+          cp -R document-reconciler-app/dist/. pages-dist/document-reconciler/
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: pages-dist
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
