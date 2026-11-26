@@ -62,6 +62,9 @@ function isAmendmentNotice(value: unknown): value is AmendmentNotice {
     && typeof value.targetHeading === 'string'
     && typeof value.originalExcerpt === 'string'
     && typeof value.proposedText === 'string'
+    && (value.sourceText === undefined || typeof value.sourceText === 'string')
+    && (value.parseError === undefined || typeof value.parseError === 'string')
+    && (value.targetSource === undefined || value.targetSource === 'automatic' || value.targetSource === 'manual')
     && (value.status === 'pending' || value.status === 'approved' || value.status === 'rejected')
     && (value.reviewedAt === undefined || typeof value.reviewedAt === 'string')
 }

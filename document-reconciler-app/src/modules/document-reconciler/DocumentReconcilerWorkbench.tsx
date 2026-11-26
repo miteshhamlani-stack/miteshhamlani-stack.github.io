@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { CircularUploadModal } from './CircularUploadModal'
 import { getDocumentLabels } from './documentLabels'
-import { parseAddendumFiles } from './parsers/addendumBatchParser'
+import { matchAddendumText, parseAddendumFiles } from './parsers/addendumBatchParser'
 import { parseCompleteLeadDocuments } from './parsers/fullDocumentParser'
 import { starterCirculars, starterDocumentNodes, starterNotices } from './parsers/starterCirculars'
 import { createRedline, findBestExcerpt, replaceBestExcerpt } from './circulars/reconcilerEngine'
@@ -130,13 +130,17 @@ export function DocumentReconcilerWorkbench() {
   const [checklistExpanded, setChecklistExpanded] = useState(false)
   const [busy, setBusy] = useState(false)
   const [uploadError, setUploadError] = useState('')
+  const [reconciliationMessage, setReconciliationMessage] = useState('')
   const [storageError, setStorageError] = useState(initialStorage.error)
   const [leadFiles, setLeadFiles] = useState<LeadFiles>({ primary: null, secondary: null })
+  const workspaceSectionRef = useRef<HTMLElement | null>(null)
 
   const frameworks = [...starterCirculars, ...workspace.frameworks]
   const framework = frameworks.find((item) => item.id === selectedFrameworkId) ?? starterCirculars[0]
   const nodes = workspace.documentNodes
   const notices = workspace.notices
+  const reviewedNoticeCount = notices.filter((notice) => notice.status !== 'pending').length
+  const unmatchedNoticeCount = notices.filter((notice) => !notice.targetNodeId).length
   const impactedNodeIds = useMemo(() => new Set(nodes
     .filter((node) => node.isImpacted || notices.some((notice) => noticeAppliesToNode(notice, node, nodes)))
     .map((node) => node.id)), [nodes, notices])
@@ -201,6 +205,7 @@ export function DocumentReconcilerWorkbench() {
     }
     setBusy(true)
     setUploadError('')
+    setReconciliationMessage('')
     try {
       const parsedNodes = await parseCompleteLeadDocuments(nextFiles.primary, nextFiles.secondary, framework)
       setLeadFiles(nextFiles)
@@ -216,7 +221,7 @@ export function DocumentReconcilerWorkbench() {
       setSelectedNodeId(parsedNodes.find((node) => node.fullContent)?.id ?? '')
       setActiveDocument(0)
       setEditingFullNode(false)
-      setUploadsCollapsed(true)
+      setUploadsCollapsed(false)
     } catch (reason) {
       setUploadError(reason instanceof Error ? reason.message : 'Lead documents could not be parsed.')
     } finally {
@@ -224,8 +229,58 @@ export function DocumentReconcilerWorkbench() {
     }
   }
 
+  async function loadPairedDocument(file: File): Promise<void> {
+    if (!hasContent(workspaceRef.current.documentNodes)) {
+      setUploadError('Load a primary lead document before choosing a paired document.')
+      return
+    }
+    setBusy(true)
+    setUploadError('')
+    setReconciliationMessage('')
+    try {
+      const parsedNodes = await parseCompleteLeadDocuments(file, null, framework)
+      const pairedNodes = parsedNodes.filter((node) => node.fullContent.length > 0)
+      const currentNodes = workspaceRef.current.documentNodes
+      const usedNodeIds = new Set<string>()
+      const updatedNodes = currentNodes.map((node) => {
+        const pairedNode = pairedNodes.find((candidate) => (
+          !usedNodeIds.has(candidate.id) && sameSection(node, candidate)
+        ))
+        if (!pairedNode) return { ...node, pairedDocContent: undefined }
+        usedNodeIds.add(pairedNode.id)
+        return { ...node, pairedDocContent: pairedNode.fullContent }
+      })
+      const nextOrderIndex = Math.max(-1, ...updatedNodes.map((node) => node.orderIndex)) + 1
+      const additionalNodes = pairedNodes
+        .filter((node) => !usedNodeIds.has(node.id))
+        .map((node, index) => ({
+          ...node,
+          id: `paired-${node.id}`,
+          orderIndex: nextOrderIndex + index,
+          fullContent: '',
+          pairedDocContent: node.fullContent,
+          isImpacted: false,
+        }))
+      const nextNodes = [...updatedNodes, ...additionalNodes]
+      commitWorkspace((current) => ({
+        ...current,
+        documentNodes: nextNodes,
+        secondaryFileName: file.name,
+        isSampleMode: false,
+      }))
+      setLeadFiles((current) => ({ ...current, secondary: file }))
+      setSelectedNodeId(nextNodes.find((node) => node.pairedDocContent)?.id ?? '')
+      setActiveDocument(1)
+    } catch (reason) {
+      setUploadError(reason instanceof Error ? reason.message : 'The paired document could not be parsed.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   function clearLeadDocuments(): void {
     setLeadFiles({ primary: null, secondary: null })
+    setReconciliationMessage('')
     commitWorkspace((current) => ({
       ...current,
       documentNodes: [],
@@ -241,10 +296,6 @@ export function DocumentReconcilerWorkbench() {
 
   function removeSecondaryDocument(): void {
     setActiveDocument(0)
-    if (leadFiles.primary) {
-      void loadLeadFiles({ primary: leadFiles.primary, secondary: null })
-      return
-    }
     commitWorkspace((current) => ({
       ...current,
       documentNodes: current.documentNodes
@@ -257,16 +308,18 @@ export function DocumentReconcilerWorkbench() {
 
   async function loadAddendums(files: File[]): Promise<void> {
     if (files.length === 0) return
-    if (!hasContent(nodes)) {
+    if (!hasContent(workspaceRef.current.documentNodes)) {
       setUploadError('Load a complete lead document before adding notices.')
       return
     }
     setBusy(true)
     setUploadError('')
+    setReconciliationMessage('')
     try {
-      const parsed = await parseAddendumFiles(files, framework, nodes)
-      const updatedNodes = nodes.map((node) => (
-        parsed.some((notice) => noticeAppliesToNode(notice, node, nodes))
+      const currentNodes = workspaceRef.current.documentNodes
+      const parsed = await parseAddendumFiles(files, framework, currentNodes)
+      const updatedNodes = currentNodes.map((node) => (
+        parsed.some((notice) => noticeAppliesToNode(notice, node, currentNodes))
           ? { ...node, isImpacted: true }
           : node
       ))
@@ -278,7 +331,7 @@ export function DocumentReconcilerWorkbench() {
       setSelectedNoticeId(parsed[0]?.id ?? '')
       setSelectedNodeId(parsed[0]?.targetNodeId ?? selectedNodeId)
       setOutlineMode('impacted')
-      setUploadsCollapsed(true)
+      setUploadsCollapsed(false)
     } catch (reason) {
       setUploadError(reason instanceof Error ? reason.message : 'The addendum batch could not be parsed.')
     } finally {
@@ -298,6 +351,88 @@ export function DocumentReconcilerWorkbench() {
       })),
     }))
     if (selectedNoticeId === noticeId) setSelectedNoticeId('')
+    setReconciliationMessage('')
+  }
+
+  function clearAllNotices(): void {
+    commitWorkspace((current) => ({
+      ...current,
+      notices: [],
+      documentNodes: current.documentNodes.map((node) => ({
+        ...node,
+        isImpacted: Boolean(node.circularComplianceNote?.startsWith('Missing mandatory section: ')),
+      })),
+    }))
+    setSelectedNoticeId('')
+    setReconciliationMessage('')
+  }
+
+  function assignNoticeTarget(noticeId: string, nodeId: string): void {
+    const notice = workspaceRef.current.notices.find((item) => item.id === noticeId)
+    const target = workspaceRef.current.documentNodes.find((node) => node.id === nodeId)
+    if (!notice || !target) return
+    const targetContent = target.fullContent || target.pairedDocContent || ''
+    const reference = notice.originalExcerpt || notice.sourceText || ''
+    const updatedNotice: AmendmentNotice = {
+      ...notice,
+      targetNodeId: target.id,
+      targetHeading: target.headingPath || target.title,
+      impactedScope: `${target.sectionCode ? `${target.sectionCode}: ` : ''}${target.title}`,
+      originalExcerpt: findBestExcerpt(targetContent, reference),
+      targetSource: 'manual',
+    }
+    commitWorkspace((current) => {
+      const nextNotices = current.notices.map((item) => item.id === noticeId ? updatedNotice : item)
+      return {
+        ...current,
+        notices: nextNotices,
+        documentNodes: current.documentNodes.map((node) => ({
+          ...node,
+          isImpacted: Boolean(node.circularComplianceNote?.startsWith('Missing mandatory section: '))
+            || nextNotices.some((item) => noticeAppliesToNode(item, node, current.documentNodes)),
+        })),
+      }
+    })
+    setSelectedNoticeId(noticeId)
+    setSelectedNodeId(target.id)
+    setReconciliationMessage('')
+  }
+
+  function compareDocuments(): void {
+    if (!hasLeadDocument || notices.length === 0) return
+    const currentNodes = workspaceRef.current.documentNodes
+    const comparedNotices = workspaceRef.current.notices.map((notice) => {
+      if (notice.targetSource === 'manual' || !notice.sourceText) return notice
+      const match = matchAddendumText(notice.sourceText, framework, currentNodes)
+      return {
+        ...notice,
+        ...match,
+        proposedText: notice.proposedText || match.proposedText,
+        targetSource: 'automatic' as const,
+      }
+    })
+    const impactedNodes = currentNodes.map((node) => ({
+      ...node,
+      isImpacted: Boolean(node.circularComplianceNote?.startsWith('Missing mandatory section: '))
+        || comparedNotices.some((notice) => noticeAppliesToNode(notice, node, currentNodes)),
+    }))
+    commitWorkspace((current) => ({
+      ...current,
+      documentNodes: impactedNodes,
+      notices: comparedNotices,
+    }))
+    const matchedCount = comparedNotices.filter((notice) => notice.targetNodeId).length
+    const unmatchedCount = comparedNotices.length - matchedCount
+    setReconciliationMessage(
+      `Reconciliation complete: ${matchedCount} of ${comparedNotices.length} amendment notices matched${unmatchedCount ? `; ${unmatchedCount} need a target section` : ''}.`,
+    )
+    setSelectedNoticeId(comparedNotices[0]?.id ?? '')
+    setSelectedNodeId(comparedNotices.find((notice) => notice.targetNodeId)?.targetNodeId ?? '')
+    setOutlineMode('impacted')
+    setUploadsCollapsed(true)
+    window.requestAnimationFrame(() => {
+      workspaceSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   }
 
   function reviewNotice(notice: AmendmentNotice, status: 'approved' | 'rejected'): void {
@@ -346,6 +481,7 @@ export function DocumentReconcilerWorkbench() {
   }
 
   function saveFramework(next: CircularFramework): void {
+    setReconciliationMessage('')
     commitWorkspace((current) => ({
       ...current,
       frameworks: [...current.frameworks.filter((item) => item.id !== next.id), next],
@@ -379,6 +515,7 @@ export function DocumentReconcilerWorkbench() {
     }))
     setUploadsCollapsed(false)
     setUploadError('')
+    setReconciliationMessage('')
   }
 
   function previewSampleWorkspace(): void {
@@ -397,10 +534,12 @@ export function DocumentReconcilerWorkbench() {
     setOutlineMode('complete')
     setUploadsCollapsed(true)
     setUploadError('')
+    setReconciliationMessage('')
   }
 
   function clearSession(): void {
     setLeadFiles({ primary: null, secondary: null })
+    setReconciliationMessage('')
     commitWorkspace((current) => ({
       ...current,
       documentNodes: [],
@@ -434,13 +573,14 @@ export function DocumentReconcilerWorkbench() {
 
   function handleLeadDrop(event: DragEvent<HTMLDivElement>): void {
     event.preventDefault()
-    const files = [...event.dataTransfer.files]
-    if (files.length === 0) return
-    if (files.length > 2) {
-      setUploadError('Drop at most two lead documents: a primary document and its paired document.')
-      return
-    }
-    void loadLeadFiles({ primary: files[0], secondary: files[1] ?? leadFiles.secondary })
+    const file = event.dataTransfer.files[0]
+    if (file) void loadLeadFiles({ primary: file, secondary: null })
+  }
+
+  function handlePairedDrop(event: DragEvent<HTMLDivElement>): void {
+    event.preventDefault()
+    const file = event.dataTransfer.files[0]
+    if (file) void loadPairedDocument(file)
   }
 
   function handleAddendumDrop(event: DragEvent<HTMLDivElement>): void {
@@ -498,48 +638,73 @@ export function DocumentReconcilerWorkbench() {
         {uploadsCollapsed ? (
           <div className="reconciler-upload-summary">
             <span><strong>Primary lead:</strong> {workspace.primaryFileName ?? leadFiles.primary?.name ?? 'Not loaded'}{workspace.secondaryFileName ? ` + ${workspace.secondaryFileName}` : ''} · {expectedSectionCount} sections/blocks parsed · complete text retained</span>
-            <span><strong>Amendment notices:</strong> {notices.length} loaded</span>
+            <span><strong>Amendment notices:</strong> {notices.length} loaded{unmatchedNoticeCount ? ` · ${unmatchedNoticeCount} unmatched` : ''}</span>
           </div>
         ) : (
           <div className="reconciler-upload-boxes">
             <section className="reconciler-upload-box">
-              <div className="reconciler-upload-box-heading"><div><span className="reconciler-step">1</span><div><h3>Primary Lead Document</h3><p>Selected document type: {pairedLabels[0]} (e.g., SID, Master Policy, PPM).</p></div></div></div>
-              <div className="reconciler-dropzone" onDragOver={(event) => event.preventDefault()} onDrop={handleLeadDrop}>
-                <FileUp size={21} />
-                <strong>Drop primary and paired documents here</strong>
-                <span>PDF, DOCX, TXT, or Markdown · all extracted text is retained</span>
-                <div className="reconciler-document-pickers">
-                  <label className="reconciler-button reconciler-button-secondary">
-                    Choose primary document
-                    <input type="file" accept=".pdf,.docx,.txt,.md" disabled={busy} onChange={(event) => {
-                      const file = event.target.files?.[0]
-                      if (file) void loadLeadFiles({ primary: file, secondary: leadFiles.secondary })
-                      event.currentTarget.value = ''
-                    }} />
-                  </label>
-                  <div className="reconciler-paired-document-slot">
-                    <strong>Paired Summary Document — Optional</strong>
-                    <span>Selected paired document type: {pairedLabels[1]} (e.g., KIM, Key Facts Statement / MITC).</span>
-                    <label className="reconciler-button reconciler-button-secondary">
-                      Choose paired document
-                      <input type="file" accept=".pdf,.docx,.txt,.md" disabled={busy} onChange={(event) => {
-                        const file = event.target.files?.[0]
-                        if (file) void loadLeadFiles({ primary: leadFiles.primary, secondary: file })
-                        event.currentTarget.value = ''
-                      }} />
-                    </label>
+              <div className="reconciler-upload-box-heading"><div><span className="reconciler-step">1</span><div><h3>Lead Documents</h3><p>Complete text is retained from every uploaded document.</p></div></div></div>
+              <div className="reconciler-document-pickers">
+                <div className="reconciler-document-slot">
+                  <div className="reconciler-document-slot-heading"><h4>Primary Lead Document</h4><p>(e.g., {pairedLabels[0]}, Master Policy, PPM)</p></div>
+                  <div className="reconciler-document-slot-dropzone" onDragOver={(event) => event.preventDefault()} onDrop={handleLeadDrop}>
+                    {(workspace.primaryFileName || leadFiles.primary) ? (
+                      <div className="reconciler-uploaded-document">
+                        <FileText size={17} />
+                        <span title={workspace.primaryFileName ?? leadFiles.primary?.name}>{workspace.primaryFileName ?? leadFiles.primary?.name}</span>
+                        <button type="button" aria-label="Remove primary document" disabled={busy} onClick={clearLeadDocuments}><X size={14} /></button>
+                      </div>
+                    ) : (
+                      <>
+                        <FileUp size={21} />
+                        <strong>Drop a primary document here</strong>
+                        <span>DOCX, PDF, TXT, or Markdown</span>
+                        <label className="reconciler-button reconciler-button-secondary">
+                          Choose primary document
+                          <input type="file" accept=".pdf,.docx,.txt,.md" disabled={busy} onChange={(event) => {
+                            const file = event.target.files?.[0]
+                            if (file) void loadLeadFiles({ primary: file, secondary: null })
+                            event.currentTarget.value = ''
+                          }} />
+                        </label>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="reconciler-document-slot">
+                  <div className="reconciler-document-slot-heading"><h4>Paired Summary Document (Optional)</h4><p>(e.g., {pairedLabels[1]}, Key Facts Statement / MITC)</p></div>
+                  <div className="reconciler-document-slot-dropzone" onDragOver={(event) => event.preventDefault()} onDrop={handlePairedDrop}>
+                    {(workspace.secondaryFileName || leadFiles.secondary) ? (
+                      <div className="reconciler-uploaded-document">
+                        <FileText size={17} />
+                        <span title={workspace.secondaryFileName ?? leadFiles.secondary?.name}>{workspace.secondaryFileName ?? leadFiles.secondary?.name}</span>
+                        <button type="button" aria-label="Remove paired document" disabled={busy} onClick={removeSecondaryDocument}><X size={14} /></button>
+                      </div>
+                    ) : (
+                      <>
+                        <FileUp size={21} />
+                        <strong>Drop an optional paired document here</strong>
+                        <span>DOCX, PDF, TXT, or Markdown</span>
+                        <label className="reconciler-button reconciler-button-secondary">
+                          Choose paired document
+                          <input type="file" accept=".pdf,.docx,.txt,.md" disabled={busy || !hasLeadDocument} onChange={(event) => {
+                            const file = event.target.files?.[0]
+                            if (file) void loadPairedDocument(file)
+                            event.currentTarget.value = ''
+                          }} />
+                        </label>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
-              <div className="reconciler-file-pills">
-                {(workspace.primaryFileName || leadFiles.primary) && <span className="reconciler-file-pill">Primary · {workspace.primaryFileName ?? leadFiles.primary?.name}<button type="button" aria-label="Remove primary document" onClick={clearLeadDocuments}><X size={13} /></button></span>}
-                {(workspace.secondaryFileName || leadFiles.secondary) && <span className="reconciler-file-pill">Paired · {workspace.secondaryFileName ?? leadFiles.secondary?.name}<button type="button" aria-label="Remove paired document" onClick={removeSecondaryDocument}><X size={13} /></button></span>}
+              <div className="reconciler-upload-box-footer">
                 {expectedSectionCount > 0 && <span className="reconciler-section-count">{expectedSectionCount} sections/blocks parsed · 100% text retained</span>}
               </div>
             </section>
 
             <section className="reconciler-upload-box">
-              <div className="reconciler-upload-box-heading"><div><span className="reconciler-step">2</span><div><h3>Amendment Notices / Addendums</h3><p>(e.g., Notice-cum-Addendums, Circular Updates, Corrigenda)</p></div></div></div>
+              <div className="reconciler-upload-box-heading"><div><span className="reconciler-step">2</span><div><h3>Amendment Notices / Addendums</h3><p>(e.g., Notice-cum-Addendums, Circular Updates, Corrigenda)</p></div></div>{notices.length > 0 && <button type="button" className="reconciler-clear-all" onClick={clearAllNotices}>Clear all</button>}</div>
               <div className="reconciler-dropzone reconciler-addendum-dropzone" onDragOver={(event) => event.preventDefault()} onDrop={handleAddendumDrop}>
                 <FileUp size={21} />
                 <strong>Drop multiple amendment or addendum files here (.docx, .pdf, .txt, .md)</strong>
@@ -555,7 +720,7 @@ export function DocumentReconcilerWorkbench() {
               <div className="reconciler-file-pills reconciler-addendum-pills">
                 {notices.map((notice) => (
                   <span className="reconciler-file-pill" key={notice.id}>
-                    {notice.fileName}<span className={`reconciler-section-tag ${notice.status}`}>{notice.targetHeading}</span>
+                    {notice.fileName}<span className={`reconciler-section-tag ${notice.status}`}>{notice.targetHeading || 'Unmatched'}</span>
                     <button type="button" aria-label={`Remove ${notice.fileName}`} onClick={() => removeNotice(notice.id)}><X size={13} /></button>
                   </span>
                 ))}
@@ -564,6 +729,19 @@ export function DocumentReconcilerWorkbench() {
             </section>
           </div>
         )}
+        <div className="reconciler-compare-bar">
+          <div className="reconciler-compare-readiness">
+            <strong>{hasLeadDocument && notices.length > 0
+              ? `Ready: 1 Primary Document (${expectedSectionCount} sections) + ${notices.length} Amendment Notices loaded`
+              : !hasLeadDocument
+                ? 'Upload a Primary Lead Document and at least 1 Amendment Notice to compare.'
+                : 'Upload at least 1 Amendment Notice to compare.'}</strong>
+            {unmatchedNoticeCount > 0 && <span>{unmatchedNoticeCount} notice{unmatchedNoticeCount === 1 ? '' : 's'} need a target section.</span>}
+          </div>
+          <button type="button" className="reconciler-button reconciler-button-primary" disabled={!hasLeadDocument || notices.length === 0 || busy} onClick={compareDocuments}>
+            {busy ? 'Preparing comparison…' : 'Compare & Reconcile Documents'}
+          </button>
+        </div>
       </section>
 
       {workspace.isSampleMode && (
@@ -573,7 +751,13 @@ export function DocumentReconcilerWorkbench() {
         </div>
       )}
 
-      <section className="reconciler-workspace reconciler-full-workspace">
+      {reconciliationMessage && <div className="reconciler-reconciliation-message" role="status">{reconciliationMessage}</div>}
+
+      <section className="reconciler-workspace reconciler-full-workspace" ref={workspaceSectionRef}>
+        <div className="reconciler-review-progress">
+          <strong>Reviewed: {reviewedNoticeCount} / {notices.length} changes</strong>
+          <span>{notices.length - reviewedNoticeCount} pending review</span>
+        </div>
         <aside className="reconciler-sidebar">
           <div className="reconciler-panel-heading"><h2>Document outline</h2><span>{outlineNodes.length}</span></div>
           <div className="reconciler-outline-toggle" role="group" aria-label="Document outline filter">
@@ -607,6 +791,17 @@ export function DocumentReconcilerWorkbench() {
                   <small>{notice.fileName} · {notice.impactedScope}</small>
                 </button>
                 <button type="button" className="reconciler-icon-button" aria-label={`Remove ${notice.fileName}`} onClick={() => removeNotice(notice.id)}><X size={14} /></button>
+                {!notice.targetNodeId && (
+                  <label className="reconciler-unmatched-picker">
+                    <span>Unmatched — Select Target Section</span>
+                    <select value="" onChange={(event) => assignNoticeTarget(notice.id, event.target.value)}>
+                      <option value="">Choose a section…</option>
+                      {nodes.filter((node) => node.fullContent || node.pairedDocContent).map((node) => (
+                        <option key={node.id} value={node.id}>{node.sectionCode ? `${node.sectionCode} · ` : ''}{node.title}</option>
+                      ))}
+                    </select>
+                  </label>
+                )}
               </div>
             ))}
           </div>
@@ -620,6 +815,8 @@ export function DocumentReconcilerWorkbench() {
           {selectedNode ? (
             <>
               {selectedNotice && <div className="reconciler-notice-meta"><span>{selectedNotice.fileName}</span><span>{selectedNotice.noticeDate}</span><span>Effective {selectedNotice.effectiveDate}</span><span>{selectedNotice.impactedScope}</span></div>}
+              {selectedNotice?.parseError && <p className="reconciler-parse-warning" role="alert">{selectedNotice.parseError} — the file remains in the queue; select a target and edit its proposed text manually.</p>}
+              {selectedNotice && !selectedNotice.targetNodeId && <p className="reconciler-parse-warning">Unmatched — select a target section from the amendment queue before approving this change.</p>}
               <div className="reconciler-document-tabs" role="tablist" aria-label="Document to review">
                 {documentTabs.map((tab) => (
                   <button type="button" role="tab" aria-selected={activeDocument === tab.index} key={tab.title} onClick={() => setActiveDocument(tab.index)}>
@@ -654,7 +851,7 @@ export function DocumentReconcilerWorkbench() {
                   {selectedNotice?.status === 'pending' && <>
                     <button type="button" className="reconciler-button reconciler-button-secondary" onClick={() => { setEditText(selectedNotice.proposedText); setEditingNoticeId(selectedNotice.id) }}><Pencil size={15} /> Inline Edit</button>
                     <button type="button" className="reconciler-button reconciler-button-danger" onClick={() => reviewNotice(selectedNotice, 'rejected')}><X size={15} /> Reject</button>
-                    <button type="button" className="reconciler-button reconciler-button-primary" onClick={() => reviewNotice(selectedNotice, 'approved')}><Check size={15} /> Approve</button>
+                    <button type="button" className="reconciler-button reconciler-button-primary" disabled={!selectedNotice.targetNodeId || !selectedNotice.proposedText.trim()} title={!selectedNotice.targetNodeId ? 'Select a target section before approving.' : undefined} onClick={() => reviewNotice(selectedNotice, 'approved')}><Check size={15} /> Approve</button>
                   </>}
                 </div>
               )}

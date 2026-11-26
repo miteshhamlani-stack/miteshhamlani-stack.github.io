@@ -40,6 +40,9 @@ export interface AmendmentNotice {
   targetHeading: string
   originalExcerpt: string
   proposedText: string
+  sourceText?: string
+  parseError?: string
+  targetSource?: 'automatic' | 'manual'
   status: 'pending' | 'approved' | 'rejected'
   reviewedAt?: string
 }

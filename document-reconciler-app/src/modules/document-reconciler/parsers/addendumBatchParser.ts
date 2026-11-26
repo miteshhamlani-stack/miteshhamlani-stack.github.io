@@ -11,7 +11,7 @@ function words(value: string): string[] {
 
 function findTargetNode(text: string, framework: CircularFramework, nodes: DocumentNode[]): DocumentNode | null {
   const searchableText = normalize(text)
-  let best: { node: DocumentNode; score: number; index: number } | null = null
+  let best: { node: DocumentNode; score: number; index: number; confident: boolean } | null = null
 
   for (const [index, node] of nodes.entries()) {
     const nodeText = node.fullContent || node.pairedDocContent || ''
@@ -21,21 +21,25 @@ function findTargetNode(text: string, framework: CircularFramework, nodes: Docum
         || normalize(section.title) === normalize(node.title))
     const code = normalize(node.sectionCode)
     const title = normalize(node.title)
-    let score = code && searchableText.includes(code) ? 100 : 0
-    if (title && searchableText.includes(title)) score += 60
+    const hasCode = code.length > 0 && ` ${searchableText} `.includes(` ${code} `)
+    const hasTitle = title.length > 0 && ` ${searchableText} `.includes(` ${title} `)
+    let keywordScore = 0
+    let score = hasCode ? 100 : 0
+    if (hasTitle) score += 60
     for (const keyword of expected?.keywords ?? []) {
       const normalizedKeyword = normalize(keyword)
       if (normalizedKeyword && searchableText.includes(normalizedKeyword)) {
-        score += Math.max(3, normalizedKeyword.split(' ').length * 5)
+        keywordScore += Math.max(3, normalizedKeyword.split(' ').length * 5)
       }
     }
+    score += keywordScore
     const paragraphWords = words(nodeText)
     score += words(text).filter((word) => paragraphWords.includes(word)).length
     if (score > 0 && (!best || score > best.score || (score === best.score && index < best.index))) {
-      best = { node, score, index }
+      best = { node, score, index, confident: hasCode || hasTitle || keywordScore >= 8 }
     }
   }
-  return best?.node ?? null
+  return best?.confident ? best.node : null
 }
 
 function extractDate(text: string, expression: RegExp): string | null {
@@ -70,16 +74,16 @@ function targetExcerpt(text: string, addendum: string): string {
   return best || candidates[0] || text.trim()
 }
 
-function proposedText(text: string, target: DocumentNode): string {
+function proposedText(text: string, target?: DocumentNode): string {
   const marked = text.match(/(?:proposed|amended|revised|replacement)\s+(?:clause|text|wording)\s*[:-]\s*([\s\S]+)/i)?.[1]?.trim()
   if (marked) return marked
 
   const lines = text.split(/\r?\n/)
-  const targetHeadingIndex = lines.findIndex((line) => {
+  const targetHeadingIndex = target ? lines.findIndex((line) => {
     const normalizedLine = normalize(line)
     return (target.sectionCode && normalizedLine.includes(normalize(target.sectionCode)))
       || (target.title && normalizedLine.includes(normalize(target.title)))
-  })
+  }) : -1
   if (targetHeadingIndex >= 0) {
     const body = lines.slice(targetHeadingIndex + 1)
     const nextHeading = body.findIndex((line) =>
@@ -94,20 +98,52 @@ function proposedText(text: string, target: DocumentNode): string {
   return (proposal.at(-1) ?? text).trim()
 }
 
+export interface AddendumMatch {
+  targetNodeId: string
+  targetHeading: string
+  impactedScope: string
+  originalExcerpt: string
+  proposedText: string
+}
+
+export function matchAddendumText(
+  text: string,
+  framework: CircularFramework,
+  fullDocNodes: DocumentNode[],
+): AddendumMatch {
+  const target = findTargetNode(text, framework, fullDocNodes)
+  if (!target) {
+    return {
+      targetNodeId: '',
+      targetHeading: '',
+      impactedScope: 'Unmatched — select target section',
+      originalExcerpt: '',
+      proposedText: proposedText(text),
+    }
+  }
+  const targetContent = target.fullContent || target.pairedDocContent || ''
+  return {
+    targetNodeId: target.id,
+    targetHeading: target.headingPath || target.title,
+    impactedScope: `${target.sectionCode ? `${target.sectionCode}: ` : ''}${target.title}`,
+    originalExcerpt: targetExcerpt(targetContent, text),
+    proposedText: proposedText(text, target),
+  }
+}
+
 async function parseOne(
   file: File,
   framework: CircularFramework,
   fullDocNodes: DocumentNode[],
 ): Promise<AmendmentNotice> {
-  let text: string
+  let text = ''
+  let parseError: string | undefined
   try {
     text = await extractTextFromFile(file)
   } catch (reason) {
-    throw new Error(`${file.name}: ${reason instanceof Error ? reason.message : 'Could not extract text.'}`)
+    parseError = reason instanceof Error ? reason.message : 'Could not extract text.'
   }
-  if (!text.trim()) throw new Error(`${file.name}: no readable text was found.`)
-  const target = findTargetNode(text, framework, fullDocNodes)
-  if (!target) throw new Error(`${file.name}: no document section matched. Include a section code, title, or relevant terms.`)
+  if (!text.trim() && !parseError) parseError = 'No readable text was found.'
 
   const noticeNumber = text.match(/\b(?:notice|circular|addendum)\s*(?:no\.?|number|#)\s*[:#-]?\s*([A-Z0-9][A-Z0-9./-]*)/i)?.[1]
     ?? file.name.replace(/\.[^.]+$/, '')
@@ -115,7 +151,7 @@ async function parseOne(
     ?? new Date(file.lastModified).toISOString().slice(0, 10)
   const effectiveDate = extractDate(text, /\b(?:effective(?:\s+date|\s+from)?|with effect from)\s*:?\s*(\d{4}-\d{1,2}-\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{1,2}\s+[A-Za-z]+\s+\d{4})/i)
     ?? noticeDate
-  const targetContent = target.fullContent || target.pairedDocContent || ''
+  const match = matchAddendumText(text, framework, fullDocNodes)
 
   return {
     id: `notice-${crypto.randomUUID()}`,
@@ -123,11 +159,10 @@ async function parseOne(
     noticeNumber,
     noticeDate,
     effectiveDate,
-    impactedScope: `${target.sectionCode ? `${target.sectionCode}: ` : ''}${target.title}`,
-    targetNodeId: target.id,
-    targetHeading: target.headingPath || target.title,
-    originalExcerpt: targetExcerpt(targetContent, text),
-    proposedText: proposedText(text, target),
+    ...match,
+    sourceText: text,
+    targetSource: 'automatic',
+    ...(parseError ? { parseError: `${file.name}: ${parseError}` } : {}),
     status: 'pending',
   }
 }

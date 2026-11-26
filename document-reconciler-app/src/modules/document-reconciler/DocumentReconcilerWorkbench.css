@@ -716,6 +716,180 @@
   clip: rect(0, 0, 0, 0);
 }
 
+.reconciler-document-slot {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.reconciler-document-slot-heading {
+  min-height: 39px;
+}
+
+.reconciler-document-slot-heading h4 {
+  margin: 0;
+  color: #485978;
+  font-size: 10px;
+}
+
+.reconciler-document-slot-heading p {
+  margin: 4px 0 0;
+  color: #8792a6;
+  font-size: 9px;
+}
+
+.reconciler-document-slot-dropzone {
+  display: flex;
+  min-height: 195px;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 8px;
+  color: #75839b;
+  text-align: center;
+  border: 1px dashed #cbd4e4;
+  border-radius: 8px;
+  background: #f9faff;
+  font-size: 9px;
+}
+
+.reconciler-document-slot-dropzone > svg {
+  color: #6074b9;
+}
+
+.reconciler-document-slot-dropzone > strong {
+  color: #485978;
+  font-size: 10px;
+}
+
+.reconciler-uploaded-document {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 9px;
+  color: #526183;
+  border: 1px solid #dfe5f0;
+  border-radius: 7px;
+  background: #fff;
+  text-align: left;
+}
+
+.reconciler-uploaded-document > svg {
+  flex: 0 0 auto;
+  color: #6074b9;
+}
+
+.reconciler-uploaded-document > span {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reconciler-uploaded-document > button {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  color: #7e899c;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.reconciler-uploaded-document > button:hover {
+  color: #a23f46;
+  background: #fff0f1;
+}
+
+.reconciler-uploaded-document > button:disabled {
+  cursor: wait;
+}
+
+.reconciler-upload-box-footer {
+  min-height: 20px;
+  margin-top: 8px;
+}
+
+.reconciler-addendum-dropzone {
+  min-height: 195px;
+  flex: 1;
+}
+
+.reconciler-addendum-pills {
+  align-content: flex-start;
+  padding-top: 10px;
+}
+
+.reconciler-clear-all {
+  padding: 4px 2px;
+  color: #566ba9;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.reconciler-clear-all:hover {
+  color: #a23f46;
+}
+
+.reconciler-compare-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-top: 14px;
+  border: 1px solid #e1e7f2;
+  border-radius: 8px;
+  background: #f8f9fd;
+}
+
+.reconciler-compare-readiness {
+  display: grid;
+  gap: 4px;
+  color: #485975;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.reconciler-compare-readiness > strong {
+  font-weight: 700;
+}
+
+.reconciler-compare-readiness > span {
+  color: #a26d16;
+}
+
+.reconciler-compare-bar > .reconciler-button {
+  flex: 0 0 auto;
+}
+
+.reconciler-reconciliation-message {
+  width: min(1540px, calc(100% - 48px));
+  padding: 10px 13px;
+  margin: 0 auto 12px;
+  color: #276d4b;
+  border: 1px solid #cce8d6;
+  border-radius: 8px;
+  background: #f0faf4;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
 .reconciler-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -954,11 +1128,16 @@
 .reconciler-upload-boxes {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  align-items: stretch;
+  gap: 24px;
 }
 
 .reconciler-upload-box {
+  display: flex;
+  min-height: 330px;
   min-width: 0;
+  flex-direction: column;
+  justify-content: space-between;
   padding: 13px;
   border: 1px solid #e7ebf2;
   border-radius: 9px;
@@ -970,6 +1149,16 @@
   display: flex;
   align-items: flex-start;
   gap: 9px;
+}
+
+.reconciler-upload-box-heading {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reconciler-upload-box-heading > div {
+  min-width: 0;
+  flex: 1;
 }
 
 .reconciler-step {
@@ -1024,11 +1213,13 @@
 }
 
 .reconciler-document-pickers {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 5px;
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 14px;
 }
 
 .reconciler-document-pickers input,
@@ -1119,13 +1310,15 @@
 }
 
 .reconciler-notice-item {
-  display: flex;
-  align-items: center;
-  gap: 3px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 5px 8px;
 }
 
 .reconciler-notice-select {
   display: grid;
+  grid-column: 1;
   min-width: 0;
   flex: 1;
   justify-items: start;
@@ -1143,6 +1336,64 @@
 .reconciler-notice-select small {
   max-width: 100%;
   overflow-wrap: anywhere;
+}
+
+.reconciler-notice-item > .reconciler-icon-button {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.reconciler-unmatched-picker {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 5px;
+  padding: 5px 2px 2px;
+}
+
+.reconciler-unmatched-picker > span {
+  color: #a26d16;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.reconciler-unmatched-picker select {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 8px;
+  color: #4a5872;
+  border: 1px solid #dfe4ec;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+  font-size: 9px;
+}
+
+.reconciler-review-progress {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 13px;
+  color: #435270;
+  border: 1px solid #e1e7f2;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 10px;
+}
+
+.reconciler-review-progress > span {
+  color: #7d899d;
+}
+
+.reconciler-parse-warning {
+  padding: 8px 10px;
+  color: #8a5717;
+  border: 1px solid #f1dfbf;
+  border-radius: 7px;
+  background: #fff9ed;
+  font-size: 10px;
+  line-height: 1.5;
 }
 
 .reconciler-framework-summary {
@@ -1386,25 +1637,39 @@
   flex: 0 0 auto;
 }
 
-.reconciler-paired-document-slot {
-  display: grid;
-  max-width: 285px;
-  justify-items: center;
-  gap: 5px;
-  color: #738098;
-  font-size: 9px;
-  line-height: 1.4;
-  text-align: center;
-}
-
-.reconciler-paired-document-slot strong {
-  color: #485978;
-  font-size: 10px;
-}
-
 @media (max-width: 760px) {
   .reconciler-sample-banner {
     width: calc(100% - 28px);
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+.reconciler-full-workspace {
+  scroll-margin-top: 16px;
+}
+
+@media (max-width: 760px) {
+  .reconciler-document-pickers {
+    grid-template-columns: 1fr;
+  }
+  .reconciler-document-slot-dropzone {
+    min-height: 145px;
+  }
+  .reconciler-compare-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .reconciler-compare-bar > .reconciler-button {
+    width: 100%;
+  }
+  .reconciler-reconciliation-message {
+    width: calc(100% - 28px);
+  }
+}
+
+@media (max-width: 460px) {
+  .reconciler-review-progress {
     align-items: flex-start;
     flex-direction: column;
   }
