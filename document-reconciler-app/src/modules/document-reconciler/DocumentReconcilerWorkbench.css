@@ -1836,3 +1836,205 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.reconciler-app {
+  min-width: 0;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+.reconciler-app :is(.reconciler-upload-strip, .reconciler-upload-box,
+  .reconciler-sidebar, .reconciler-review-panel, .reconciler-preview-panel,
+  .reconciler-full-preview-panel, .reconciler-preview-document, .reconciler-modal,
+  .reconciler-framework-summary, .reconciler-review-progress) {
+  box-shadow: 0 6px 22px rgb(15 23 42 / 5%);
+}
+
+.reconciler-app :is(.reconciler-upload-strip-heading h2, .reconciler-panel-heading h2,
+  .reconciler-upload-box-heading h3, .reconciler-document-slot-heading h4,
+  .reconciler-framework-summary strong, .reconciler-preview-document h3,
+  .reconciler-preview-document h4, .reconciler-notice-select strong) {
+  color: var(--foreground);
+}
+
+.reconciler-app :is(.reconciler-muted, .reconciler-eyebrow,
+  .reconciler-upload-box-heading p, .reconciler-document-slot-heading p,
+  .reconciler-panel-heading p, .reconciler-preview-document h3 span, .reconciler-preview-document p,
+  .reconciler-review-progress > span, .reconciler-upload-summary,
+  .reconciler-field-hint, .reconciler-custom-list > div,
+  .reconciler-section-item, .reconciler-section-code, .reconciler-notice-item,
+  .reconciler-notice-select small, .reconciler-review-time, .reconciler-full-editor label,
+  .reconciler-continuous-reader pre, .reconciler-empty-state span) {
+  color: var(--muted-foreground);
+}
+
+.reconciler-app :is(.reconciler-upload-strip-heading h2,
+  .reconciler-panel-heading h2) {
+  font-size: 16px;
+}
+
+.reconciler-app .reconciler-upload-box-heading h3 {
+  font-size: 15px;
+}
+
+.reconciler-app :is(.reconciler-upload-box-heading p,
+  .reconciler-document-slot-heading p, .reconciler-compare-readiness,
+  .reconciler-review-progress, .reconciler-upload-summary) {
+  font-size: 12px;
+}
+
+.reconciler-app :is(.reconciler-document-slot-heading h4,
+  .reconciler-preview-document h3) {
+  font-size: 12px;
+}
+
+.reconciler-app :is(.reconciler-document-slot-dropzone,
+  .reconciler-dropzone) {
+  font-size: 12px;
+}
+
+.reconciler-app :is(.reconciler-document-slot-dropzone > strong,
+  .reconciler-dropzone > strong) {
+  font-size: 13px;
+}
+
+.reconciler-app :is(.reconciler-preview-document h4,
+  .reconciler-preview-document p, .reconciler-continuous-reader pre,
+  .reconciler-notice-select, .reconciler-section-item, .reconciler-section-code) {
+  font-size: 11px;
+}
+
+.reconciler-app .reconciler-button {
+  font-size: 12px;
+}
+
+.reconciler-app :is(.reconciler-file-pill, .reconciler-section-tag,
+  .reconciler-status-badge, .reconciler-unmatched-picker > span) {
+  font-size: 10px;
+}
+
+.reconciler-app :is(.reconciler-select-wrap select, .reconciler-modal-field select,
+  .reconciler-unmatched-picker select, .reconciler-form-grid input,
+  .reconciler-form-grid select, .reconciler-form-grid textarea,
+  .reconciler-modal-field textarea, .reconciler-modal-field input,
+  .reconciler-full-editor textarea) {
+  color: var(--foreground);
+  border-color: var(--input);
+  background-color: var(--card);
+}
+
+.reconciler-app :is(.reconciler-document-slot-dropzone, .reconciler-dropzone,
+  .reconciler-compare-bar, .reconciler-outline-toggle button,
+  .reconciler-uploaded-document, .reconciler-file-pill) {
+  color: var(--muted-foreground);
+  border-color: var(--border);
+  background: var(--muted);
+}
+
+.reconciler-app :is(.reconciler-document-slot-dropzone > strong,
+  .reconciler-dropzone > strong, .reconciler-compare-readiness,
+  .reconciler-uploaded-document, .reconciler-file-pill,
+  .reconciler-notice-select) {
+  color: var(--foreground);
+}
+
+.reconciler-app :is(.reconciler-section-item:hover, .reconciler-notice-item:hover,
+  .reconciler-outline-toggle button:hover) {
+  border-color: var(--border);
+  background: var(--muted);
+}
+
+.reconciler-app :is(.reconciler-section-item.active, .reconciler-notice-item.active,
+  .reconciler-outline-toggle button.active, .reconciler-document-tabs button.active,
+  .reconciler-document-tabs button[aria-selected="true"]) {
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.reconciler-app :is(.reconciler-section-item.active, .reconciler-notice-item.active,
+  .reconciler-outline-toggle button.active, .reconciler-document-tabs button.active,
+  .reconciler-document-tabs button[aria-selected="true"]) :is(strong, small, span, svg) {
+  color: var(--primary-foreground);
+}
+
+.reconciler-app .reconciler-button-primary {
+  color: var(--primary-foreground);
+  background: var(--primary);
+  box-shadow: 0 8px 20px -12px rgb(15 41 74 / 60%);
+}
+
+.reconciler-app .reconciler-button-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.reconciler-app .reconciler-button-primary:disabled {
+  color: var(--primary-foreground);
+  background: #64748b;
+  opacity: 1;
+}
+
+.reconciler-app :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ring) 45%, transparent);
+  outline-offset: 2px;
+}
+
+.reconciler-app :is(.reconciler-upload-boxes, .reconciler-upload-box,
+  .reconciler-document-pickers, .reconciler-workspace, .reconciler-full-workspace,
+  .reconciler-preview-columns, .reconciler-review-progress) {
+  min-width: 0;
+}
+
+.reconciler-app .reconciler-upload-box {
+  min-height: 335px;
+}
+
+.reconciler-app .reconciler-compare-bar {
+  flex-wrap: wrap;
+}
+
+.reconciler-app .reconciler-compare-readiness {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.reconciler-app .reconciler-document-tabs {
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.reconciler-app .reconciler-sample-banner,
+.reconciler-app .reconciler-unmatched-picker,
+.reconciler-app .reconciler-upload-summary {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1023px) {
+  .reconciler-app .reconciler-upload-box {
+    min-height: 335px;
+  }
+}
+
+@media (max-width: 760px) {
+  .reconciler-app .reconciler-title-row {
+    flex-wrap: wrap;
+  }
+
+  .reconciler-app .reconciler-upload-strip {
+    width: 100%;
+  }
+
+  .reconciler-app .reconciler-upload-box {
+    min-height: 0;
+  }
+
+  .reconciler-app .reconciler-compare-bar {
+    align-items: stretch;
+  }
+
+  .reconciler-app .reconciler-compare-readiness {
+    width: 100%;
+  }
+}

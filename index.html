@@ -9,36 +9,37 @@
     <title>Applications</title>
     <style>
       :root {
-        color-scheme: dark;
+        color-scheme: light;
         --radius: 0.875rem;
-        --background: oklch(0.13 0.012 260);
-        --foreground: oklch(0.95 0.01 85);
-        --card: oklch(0.2 0.015 260 / 0.6);
-        --card-foreground: oklch(0.95 0.01 85);
-        --popover: oklch(0.18 0.015 260);
-        --popover-foreground: oklch(0.95 0.01 85);
-        --primary: oklch(0.8 0.14 80);
-        --primary-foreground: oklch(0.15 0.02 260);
-        --secondary: oklch(0.68 0.15 160);
-        --secondary-foreground: oklch(0.13 0.02 260);
-        --muted: oklch(0.22 0.015 260);
-        --muted-foreground: oklch(0.7 0.02 260);
-        --accent: oklch(0.25 0.03 160);
-        --accent-foreground: oklch(0.85 0.12 160);
-        --border: oklch(1 0 0 / 10%);
-        --ring: oklch(0.8 0.14 80);
+        --background: #f8fafc;
+        --foreground: #0f172a;
+        --card: #ffffff;
+        --card-foreground: #0f172a;
+        --popover: #ffffff;
+        --popover-foreground: #0f172a;
+        --primary: #0f294a;
+        --primary-foreground: #ffffff;
+        --secondary: #166534;
+        --secondary-foreground: #ffffff;
+        --muted: #f1f5f9;
+        --muted-foreground: #475569;
+        --accent: #fff7ed;
+        --accent-foreground: #7c2d12;
+        --border: #e2e8f0;
+        --input: #cbd5e1;
+        --ring: #d97706;
         --font-display: "Fraunces", serif;
         --font-sans: "Manrope", sans-serif;
-        --sbisif-navy: var(--foreground);
-        --sbisif-navy-hover: var(--primary);
-        --sbisif-accent: var(--primary);
-        --sbisif-canvas: var(--background);
-        --sbisif-surface: var(--card);
-        --sbisif-border: var(--border);
-        --sbisif-text: var(--foreground);
-        --sbisif-muted: var(--muted-foreground);
-        --sbisif-navy-soft: var(--accent);
-        --sbisif-navy-border: var(--border);
+        --sbisif-navy: #0f294a;
+        --sbisif-navy-hover: #1e3a8a;
+        --sbisif-accent: #9a4f0a;
+        --sbisif-canvas: #f8fafc;
+        --sbisif-surface: #ffffff;
+        --sbisif-border: #e2e8f0;
+        --sbisif-text: #0f172a;
+        --sbisif-muted: #475569;
+        --sbisif-navy-soft: #eff6ff;
+        --sbisif-navy-border: #bfdbfe;
         font-family: var(--font-sans), sans-serif;
         color: var(--foreground);
         background: var(--background);
@@ -56,20 +57,20 @@
       .tool-shell-title { color: var(--foreground); font-family: var(--font-display); font-size: 18px; font-weight: 600; }
       .tool-shell-privacy { display: inline-flex; min-height: 32px; align-items: center; gap: 7px; padding: 0 10px; margin-left: auto; color: var(--secondary); border: 1px solid var(--border); border-radius: 999px; background: var(--card); font-size: 10px; font-weight: 700; white-space: nowrap; }
       .tool-shell-privacy i { width: 7px; height: 7px; border-radius: 50%; background: var(--secondary); }
-      main.container { padding-top: 24px; padding-bottom: 32px; }
+      main.container { padding-top: 32px; padding-bottom: 32px; }
       .hero { max-width: 760px; padding: 22px 0 42px; }
       .eyebrow { margin: 0 0 10px; color: var(--primary); font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; }
       h1 { margin: 0; color: var(--foreground); font-family: var(--font-display); font-size: clamp(36px, 5vw, 58px); letter-spacing: -2px; line-height: 1.05; }
       h1 span { color: var(--primary); }
       .intro { max-width: 610px; margin: 18px 0 0; color: var(--muted-foreground); font-size: 16px; line-height: 1.65; }
-      .applications { padding: 26px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); box-shadow: 0 12px 32px rgb(0 0 0 / 18%); }
+      .applications { padding: 26px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); box-shadow: 0 12px 32px rgb(15 23 42 / 5%); }
       .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
       .section-heading .eyebrow { margin-bottom: 5px; }
       h2 { margin: 0; color: var(--foreground); font-size: 22px; letter-spacing: -.5px; }
       .section-count { color: var(--muted-foreground); font-size: 12px; }
       .app-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: stretch; gap: 16px; }
       .app-card { display: flex; min-width: 0; min-height: 290px; flex-direction: column; padding: 22px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease; }
-      .app-card:not(.planned):hover { transform: translateY(-2px); border-color: var(--primary); box-shadow: 0 12px 28px rgb(0 0 0 / 28%); }
+      .app-card:not(.planned):hover { transform: translateY(-2px); border-color: var(--primary); box-shadow: 0 12px 28px rgb(15 23 42 / 9%); }
       .card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
       .icon-badge { display: grid; width: 44px; height: 44px; place-items: center; color: var(--primary); border: 1px solid var(--border); border-radius: 12px; background: var(--accent); }
       .icon-badge svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
@@ -97,7 +98,7 @@
         .tool-shell-header-inner { min-height: 68px; gap: 10px; }
         .tool-shell-title { font-size: 16px; }
         .tool-shell-privacy { max-width: 160px; padding: 0 8px; font-size: 9px; }
-        main.container { padding-top: 18px; }
+        main.container { padding-top: 24px; }
         .hero { padding: 8px 0 26px; }
         h1 { letter-spacing: -1.2px; }
         .applications { padding: 18px; }
