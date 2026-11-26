@@ -37,7 +37,7 @@ jobs:
       - name: Assemble Pages artifact
         run: |
           mkdir -p pages-dist/document-reconciler
-          cp index.html CNAME .nojekyll pages-dist/
+          cp index.html CNAME .nojekyll sbisif-logo.png pages-dist/
           cp -R document-reconciler-app/dist/. pages-dist/document-reconciler/
       - uses: actions/upload-pages-artifact@v3
         with:

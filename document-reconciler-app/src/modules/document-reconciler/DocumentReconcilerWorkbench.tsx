@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState, type DragEvent, type ReactNode } from 'react'
 import {
-  ArrowLeft,
   Check,
   ChevronDown,
   Download,
@@ -11,6 +10,7 @@ import {
   ShieldCheck,
   X,
 } from 'lucide-react'
+import { SbisifSuiteLayout } from '../../components/layout/SbisifSuiteLayout'
 import { CircularUploadModal } from './CircularUploadModal'
 import { getDocumentLabels } from './documentLabels'
 import { matchAddendumText, parseAddendumFiles } from './parsers/addendumBatchParser'
@@ -589,13 +589,8 @@ export function DocumentReconcilerWorkbench() {
   }
 
   return (
-    <main className="reconciler-app">
-      <header className="reconciler-topbar">
-        <a href="/" className="reconciler-back-link"><ArrowLeft size={17} /> Apps Portal</a>
-        <div className="reconciler-brand"><span className="reconciler-brand-icon"><ShieldCheck size={18} /></span><span>Document Reconciler</span></div>
-        <span className="reconciler-privacy"><span /> 100% browser-private</span>
-      </header>
-
+    <SbisifSuiteLayout activeApp="document-reconciler">
+      <div className="reconciler-app">
       <section className="reconciler-control-panel">
         <div className="reconciler-title-row">
           <div><p className="reconciler-eyebrow">REGULATORY DOCUMENT WORKSPACE</p><h1>Document Reconciler</h1></div>
@@ -892,9 +887,8 @@ export function DocumentReconcilerWorkbench() {
         </aside>
       </section>
 
-      <footer className="reconciler-footer"><span><ShieldCheck size={15} /> Documents stay in this browser.</span><a href="/"><ArrowLeft size={14} /> Return to Apps Portal</a></footer>
-
       {showCircularModal && <CircularUploadModal onClose={() => setShowCircularModal(false)} onSave={saveFramework} />}
-    </main>
+      </div>
+    </SbisifSuiteLayout>
   )
 }

@@ -3,48 +3,166 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="A browser-based workspace for financial operations and document reconciliation.">
-    <title>Apps Portal</title>
+    <meta name="description" content="The SBISIF suite of private, browser-based applications for fund operations.">
+    <title>SBISIF Apps</title>
     <style>
-      :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0b1020;color:#e6e9f4}
-      *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 75% -10%,#674eb638,transparent 34rem),radial-gradient(circle at 5% 30%,#294f9c21,transparent 30rem),#0b1020}
-      .wrap{width:min(1120px,calc(100% - 48px));margin:auto}.header{height:82px;border-bottom:1px solid #adb7db1f;display:flex;align-items:center;justify-content:space-between}
-      .brand{display:flex;align-items:center;gap:11px;color:#f7f8ff;text-decoration:none;font-size:15px;font-weight:700}.mark{display:grid;place-items:center;width:30px;height:30px;border:1px solid #b8a4ff80;border-radius:9px;background:linear-gradient(145deg,#5863d9,#8b5ed3);box-shadow:0 0 22px #6f5cdc5c}
-      .muted,.count{color:#8d96b2;font-size:11px;letter-spacing:.3px}.main{padding:88px 0 110px}.eyebrow{margin:0 0 14px;color:#9c8bf1;font-size:10px;font-weight:800;letter-spacing:1.8px}.hero{max-width:650px}
-      h1{margin:0;color:#f7f8ff;font-size:clamp(42px,6vw,70px);letter-spacing:-3.2px;line-height:1.03}h1 span{color:#9380e6}.intro{max-width:520px;margin:25px 0 0;color:#9ca6c2;font-size:16px;line-height:1.65}
-      .tools{margin-top:105px}.section{display:flex;align-items:end;justify-content:space-between;margin-bottom:20px}h2{margin:0;color:#f7f8ff;font-size:22px;letter-spacing:-.6px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
-      .card{min-height:300px;padding:24px;display:flex;flex-direction:column;border:1px solid #929dc62e;border-radius:14px;background:#151d34c7;text-decoration:none;color:inherit;transition:.18s}.live{padding:0;background:transparent;border:0;perspective:1000px}.live:hover{transform:translateY(-5px)}.live:focus-visible{outline:2px solid #a995f4;outline-offset:4px}.live:hover .flip-inner,.live:focus-visible .flip-inner{transform:rotateY(180deg)}.flip-inner{position:relative;width:100%;height:100%;min-height:300px;transition:transform .55s ease;transform-style:preserve-3d}.flip-face{position:absolute;inset:0;display:flex;flex-direction:column;padding:24px;border:1px solid #929dc62e;border-radius:14px;background:#151d34e8;backface-visibility:hidden}.flip-front{justify-content:space-between}.flip-front .front-mark{display:grid;width:52px;height:52px;place-items:center;margin:auto;color:#fff;border:1px solid #b8a4ff80;border-radius:15px;background:linear-gradient(145deg,#5863d9,#8b5ed3);box-shadow:0 0 28px #6f5cdc5c;font-size:25px;font-weight:700}.flip-front .front-hint{margin:0;color:#9ca6c2;font-size:12px;text-align:center}.flip-back{transform:rotateY(180deg)}.flip-back h3{margin:47px 0 10px}.flip-back p{margin:0;color:#9ca6c2;font-size:13px;line-height:1.55}.planned{border-style:dashed;background:#11182c73;filter:blur(2.5px);opacity:.52;pointer-events:none;user-select:none}
-      .masked-block{width:42px;height:42px;margin:47px 0 28px;border-radius:10px;background:#7781a12b}.masked-line{width:78%;height:14px;border-radius:5px;background:#7781a12b}.masked-line.short{width:56%;margin-top:13px}
-      .top{display:flex;justify-content:space-between}.status{color:#818ba8;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}.live .status{color:#73cfad}.dot{display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:#6d7690}.live .dot{background:#62cba6;box-shadow:0 0 10px #62cba6}.arrow{color:#a28ef2;font-size:20px}
-      h3{margin:47px 0 10px;color:#f5f6ff;font-size:20px;letter-spacing:-.5px}.planned h3{color:#bec4d7}.card p{margin:0;color:#9ca6c2;font-size:13px;line-height:1.55}.detail{margin-top:18px;color:#b6b9d1;font-size:12px;line-height:1.55}.open{margin-top:auto;padding-top:21px;color:#a995f4;font-size:12px;font-weight:750}
-      footer{display:flex;justify-content:space-between;padding:20px 0 28px;border-top:1px solid #adb7db1f;color:#68728e;font-size:10px}
-      @media(max-width:760px){.wrap{width:min(100% - 32px,560px)}.muted{display:none}.main{padding-top:60px}h1{letter-spacing:-2px}.tools{margin-top:70px}.grid{grid-template-columns:1fr}.card{min-height:240px}footer{display:grid;gap:8px}}
-      .planned{filter:blur(8px);opacity:.25}
+      :root {
+        color-scheme: light;
+        --sbisif-navy: #0F294A;
+        --sbisif-navy-hover: #1E3A8A;
+        --sbisif-accent: #D97706;
+        --sbisif-canvas: #F8FAFC;
+        --sbisif-surface: #FFFFFF;
+        --sbisif-border: #E2E8F0;
+        --sbisif-text: #0F172A;
+        --sbisif-muted: #475569;
+        --sbisif-navy-soft: #EFF6FF;
+        --sbisif-navy-border: #BFDBFE;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--sbisif-text);
+        background: var(--sbisif-canvas);
+      }
+
+      * { box-sizing: border-box; }
+      body { min-width: 320px; min-height: 100vh; margin: 0; background: var(--sbisif-canvas); }
+      a { color: inherit; }
+      .container { width: 100%; max-width: 80rem; margin: 0 auto; padding: 0 16px; }
+      .header { border-bottom: 1px solid var(--sbisif-border); background: var(--sbisif-surface); }
+      .header-inner { display: grid; min-height: 76px; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 20px; }
+      .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--sbisif-navy); font-size: 15px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+      .brand img { width: 40px; height: 40px; object-fit: contain; border-radius: 50%; }
+      .nav { display: flex; justify-content: center; gap: 5px; }
+      .nav a { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; padding: 0 13px; color: var(--sbisif-muted); border: 1px solid transparent; border-radius: 999px; font-size: 12px; font-weight: 650; text-decoration: none; white-space: nowrap; }
+      .nav a[aria-current="page"] { color: var(--sbisif-navy); border-color: var(--sbisif-navy-border); background: var(--sbisif-navy-soft); }
+      .privacy { display: inline-flex; align-items: center; gap: 7px; padding: 8px 10px; color: #166534; border: 1px solid #bbf7d0; border-radius: 999px; background: #f0fdf4; font-size: 10px; font-weight: 700; white-space: nowrap; }
+      .privacy i { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+      main.container { padding-top: 24px; padding-bottom: 32px; }
+      .hero { max-width: 760px; padding: 22px 0 42px; }
+      .eyebrow { margin: 0 0 10px; color: var(--sbisif-accent); font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; }
+      h1 { margin: 0; color: var(--sbisif-navy); font-size: clamp(36px, 5vw, 58px); letter-spacing: -2px; line-height: 1.05; }
+      h1 span { color: var(--sbisif-accent); }
+      .intro { max-width: 610px; margin: 18px 0 0; color: var(--sbisif-muted); font-size: 16px; line-height: 1.65; }
+      .applications { padding: 26px; border: 1px solid var(--sbisif-border); border-radius: 16px; background: var(--sbisif-surface); box-shadow: 0 12px 32px rgb(15 41 74 / 5%); }
+      .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+      .section-heading .eyebrow { margin-bottom: 5px; }
+      h2 { margin: 0; color: var(--sbisif-text); font-size: 22px; letter-spacing: -.5px; }
+      .section-count { color: var(--sbisif-muted); font-size: 12px; }
+      .app-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: stretch; gap: 16px; }
+      .app-card { display: flex; min-width: 0; min-height: 290px; flex-direction: column; padding: 22px; border: 1px solid var(--sbisif-border); border-radius: 14px; background: var(--sbisif-surface); transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease; }
+      .app-card:not(.planned):hover { transform: translateY(-2px); border-color: var(--sbisif-navy-border); box-shadow: 0 12px 28px rgb(15 41 74 / 9%); }
+      .card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+      .icon-badge { display: grid; width: 44px; height: 44px; place-items: center; color: var(--sbisif-navy); border: 1px solid var(--sbisif-navy-border); border-radius: 12px; background: var(--sbisif-navy-soft); }
+      .icon-badge svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+      .status { display: inline-flex; align-items: center; gap: 6px; color: #166534; font-size: 10px; font-weight: 750; text-transform: uppercase; }
+      .status i { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+      h3 { margin: 24px 0 8px; color: var(--sbisif-navy); font-size: 18px; letter-spacing: -.3px; }
+      .app-card p { margin: 0; color: var(--sbisif-muted); font-size: 13px; line-height: 1.55; }
+      .app-card small { margin-top: 12px; color: var(--sbisif-muted); font-size: 11px; line-height: 1.5; }
+      .button { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; gap: 8px; padding: 0 13px; margin-top: auto; color: #fff; border: 0; border-radius: 10px; background: var(--sbisif-navy); font-size: 12px; font-weight: 700; text-decoration: none; }
+      .button:hover { background: var(--sbisif-navy-hover); }
+      .planned { background: #f8fafc; }
+      .planned .icon-badge { color: #64748b; border-color: var(--sbisif-border); background: #f1f5f9; }
+      .planned .status { color: var(--sbisif-muted); }
+      .planned .status i { background: var(--sbisif-accent); }
+      .planned h3, .planned p, .planned small, .planned .button { filter: blur(1.5px); opacity: .6; }
+      .planned .button { color: var(--sbisif-muted); border: 1px solid var(--sbisif-border); background: #f1f5f9; }
+      .footer { border-top: 1px solid var(--sbisif-border); background: var(--sbisif-surface); }
+      .footer-inner { display: flex; min-height: 58px; align-items: center; justify-content: space-between; gap: 12px; color: var(--sbisif-muted); font-size: 11px; }
+      .footer a { color: var(--sbisif-navy); font-weight: 650; text-decoration: none; }
+      @media (min-width: 640px) { .container { padding-right: 24px; padding-left: 24px; } }
+      @media (min-width: 1024px) { .container { padding-right: 32px; padding-left: 32px; } }
+      @media (max-width: 1100px) {
+        .header-inner { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "brand privacy" "nav nav"; gap: 8px 14px; padding-top: 10px; padding-bottom: 10px; }
+        .brand { grid-area: brand; }
+        .nav { grid-area: nav; justify-content: flex-start; overflow-x: auto; padding-top: 7px; border-top: 1px solid var(--sbisif-border); }
+        .privacy { grid-area: privacy; }
+        .app-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      @media (max-width: 640px) {
+        .header-inner { grid-template-columns: 1fr; grid-template-areas: "brand" "privacy" "nav"; }
+        .privacy { justify-self: start; }
+        .nav { gap: 2px; }
+        .nav a { padding: 0 10px; font-size: 11px; }
+        main.container { padding-top: 18px; }
+        .hero { padding: 8px 0 26px; }
+        h1 { letter-spacing: -1.2px; }
+        .applications { padding: 18px; }
+        .section-heading { align-items: flex-start; flex-direction: column; gap: 6px; }
+        .app-grid { grid-template-columns: 1fr; }
+        .app-card { min-height: 250px; }
+        .footer-inner { align-items: flex-start; flex-direction: column; justify-content: center; padding-top: 12px; padding-bottom: 12px; }
+      }
     </style>
   </head>
   <body>
-    <header class="wrap header"><a class="brand" href="/" aria-label="Apps Portal home"><span class="mark">A</span><span>Apps Portal</span></a><span class="muted">Financial technology suite</span></header>
-    <main class="wrap main">
-      <section class="hero"><p class="eyebrow">DIGITAL WORKSPACE</p><h1>One secure home for<br><span>smarter fund operations.</span></h1><p class="intro">Purpose-built applications for compliant, efficient investor communication across the mutual fund ecosystem.</p></section>
-      <section class="tools" aria-labelledby="apps"><div class="section"><div><p class="eyebrow">YOUR WORKSPACE</p><h2 id="apps">Applications</h2></div></div>
-        <div class="grid">
-          <a class="card live" href="/compliance-guard/" aria-label="Open Compliance Guard">
-            <div class="flip-inner">
-              <div class="flip-face flip-front"><div class="top"><span class="status"><span class="dot"></span>Live</span><span class="arrow">↗</span></div><span class="front-mark" aria-hidden="true">C</span><h3>Compliance Guard</h3><p class="front-hint">Hover to learn more</p></div>
-              <div class="flip-face flip-back"><div class="top"><span class="status"><span class="dot"></span>Live</span><span class="arrow">↗</span></div><h3>Compliance Guard</h3><p>SEBI &amp; AMFI advertisement compliance auditing platform for MFDs and AMCs.</p><span class="open">Open application&nbsp; →</span></div>
+    <header class="header">
+      <div class="container header-inner">
+        <a class="brand" href="/" aria-label="SBISIF Apps home">
+          <img src="/sbisif-logo.png" width="40" height="40" alt="">
+          <span>SBISIF Apps</span>
+        </a>
+        <nav class="nav" aria-label="SBISIF Apps">
+          <a href="/" aria-current="page">All Apps</a>
+          <a href="/compliance-guard/">Compliance Guard</a>
+          <a href="/document-reconciler/">Document Reconciler</a>
+        </nav>
+        <span class="privacy" title="Document processing is client-side; account features may use secure services."><i></i>Zero-Server · 100% Browser Private</span>
+      </div>
+    </header>
+    <main class="container">
+      <section class="hero">
+        <p class="eyebrow">SBISIF DIGITAL WORKSPACE</p>
+        <h1>One suite for <span>smarter fund operations.</span></h1>
+        <p class="intro">Purpose-built tools for compliant, efficient investor communication across the mutual fund ecosystem.</p>
+      </section>
+      <section class="applications" aria-labelledby="applications-heading">
+        <div class="section-heading">
+          <div><p class="eyebrow">YOUR WORKSPACE</p><h2 id="applications-heading">Applications</h2></div>
+          <span class="section-count">2 available · 2 planned</span>
+        </div>
+        <div class="app-grid">
+          <article class="app-card">
+            <div class="card-top">
+              <span class="icon-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+              <span class="status"><i></i>Available</span>
             </div>
-          </a>
-          <a class="card live" href="/document-reconciler/" aria-label="Open Document Reconciler">
-            <div class="flip-inner">
-              <div class="flip-face flip-front"><div class="top"><span class="status"><span class="dot"></span>Live</span><span class="arrow">↗</span></div><span class="front-mark" aria-hidden="true">D</span><h3>Document Reconciler</h3><p class="front-hint">Hover to learn more</p></div>
-              <div class="flip-face flip-back"><div class="top"><span class="status"><span class="dot"></span>Live</span><span class="arrow">↗</span></div><h3>Document Reconciler</h3><p>Zero-cost, 100% browser-private reconciliation for SEBI SID/KIM &amp; custom uploaded Master Circulars.</p><span class="open">Open application&nbsp; →</span></div>
+            <h3>Compliance Guard</h3>
+            <p>Review financial advertising and investor communications before publication.</p>
+            <small>On-device first-pass checks for campaign copy, PDFs, images, and video.</small>
+            <a class="button" href="/compliance-guard/">Open application <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="app-card">
+            <div class="card-top">
+              <span class="icon-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5M8 9h1"/></svg></span>
+              <span class="status"><i></i>Available</span>
             </div>
-          </a>
-          <div class="card planned" aria-hidden="true"><div class="masked-block"></div><div class="masked-line"></div><div class="masked-line short"></div></div>
-          <div class="card planned" aria-hidden="true"><div class="masked-block"></div><div class="masked-line"></div><div class="masked-line short"></div></div>
+            <h3>Document Reconciler</h3>
+            <p>Compare complete lead documents against amendment notices and updates.</p>
+            <small>Private, browser-based reconciliation with reviewed changes and export.</small>
+            <a class="button" href="/document-reconciler/">Open application <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="app-card planned" aria-disabled="true">
+            <div class="card-top"><span class="icon-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span><span class="status"><i></i>Coming soon</span></div>
+            <h3>Factsheet Validator</h3>
+            <p>Review scheme factsheets and disclosures with confidence.</p>
+            <small>Planned tools for validating factsheet data and disclosures.</small>
+            <span class="button">Coming soon</span>
+          </article>
+          <article class="app-card planned" aria-disabled="true">
+            <div class="card-top"><span class="icon-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="status"><i></i>Coming soon</span></div>
+            <h3>Distributor Portal</h3>
+            <p>A central workspace for distributor communications and approvals.</p>
+            <small>Campaign collaboration and review workflows are planned.</small>
+            <span class="button">Coming soon</span>
+          </article>
         </div>
       </section>
     </main>
-    <footer class="wrap"><span>© 2026 Apps Portal</span><span>Internal enterprise workspace · Access subject to applicable permissions and policies.</span></footer>
+    <footer class="footer">
+      <div class="container footer-inner">
+        <span>© 2026 SBISIF Apps</span>
+        <a href="https://sbisif.com/">Part of the SBISIF digital suite · sbisif.com</a>
+      </div>
+    </footer>
   </body>
 </html>
