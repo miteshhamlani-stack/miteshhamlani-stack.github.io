@@ -2229,3 +2229,105 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.reconciler-app .reconciler-button:disabled {
+  color: var(--text-secondary);
+  border-color: var(--border-subtle);
+  background: var(--surface-page);
+  opacity: 1;
+}
+
+.reconciler-app .reconciler-button-secondary,
+.reconciler-app .reconciler-button-danger {
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.reconciler-app .reconciler-button-secondary:hover:not(:disabled),
+.reconciler-app .reconciler-button-danger:hover:not(:disabled) {
+  color: var(--brand-primary);
+  border-color: var(--brand-secondary);
+  background: var(--surface-page);
+}
+
+.reconciler-app :is(.reconciler-document-tabs button.active,
+  .reconciler-document-tabs button[aria-selected="true"],
+  .reconciler-audit-tabs button[aria-selected="true"]) {
+  color: var(--text-on-primary);
+  border-color: var(--brand-primary);
+  background: var(--brand-primary);
+}
+
+.reconciler-app :is(.reconciler-document-tabs button.active,
+  .reconciler-document-tabs button[aria-selected="true"],
+  .reconciler-audit-tabs button[aria-selected="true"]) :is(strong, small, span, svg) {
+  color: var(--text-on-primary);
+}
+
+.reconciler-app :is(.reconciler-section-item.active, .reconciler-notice-item.active,
+  .reconciler-outline-toggle button.active) {
+  color: var(--brand-primary);
+  border-color: var(--brand-secondary);
+  background: var(--surface-page);
+}
+
+.reconciler-app :is(.reconciler-section-item.active, .reconciler-notice-item.active,
+  .reconciler-outline-toggle button.active) :is(strong, small, span, svg) {
+  color: var(--brand-primary);
+}
+
+.reconciler-app :is(.reconciler-section-tag, .reconciler-status-badge,
+  .reconciler-audit-summary span, .reconciler-mandate-status,
+  .reconciler-resolution-status) {
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-page);
+}
+
+.reconciler-app :is(.reconciler-section-tag.approved, .reconciler-status-badge.approved,
+  .reconciler-audit-summary .compliant, .reconciler-mandate-status.compliant) {
+  color: var(--brand-secondary);
+  border-color: var(--brand-secondary);
+  background: var(--surface-page);
+}
+
+.reconciler-app :is(.reconciler-section-tag.rejected, .reconciler-status-badge.rejected,
+  .reconciler-status-badge.pending, .reconciler-audit-summary .needs_update,
+  .reconciler-audit-summary .missing, .reconciler-mandate-status.needs_update,
+  .reconciler-mandate-status.missing) {
+  color: var(--text-primary);
+  border-color: var(--brand-accent);
+  background: var(--surface-page);
+}
+
+.reconciler-app :is(.reconciler-success, .reconciler-error,
+  .reconciler-compare-readiness > span) {
+  color: var(--text-secondary);
+}
+
+.reconciler-app :is(.reconciler-storage-warning, .reconciler-reconciliation-message,
+  .reconciler-audit-missing-phrases) {
+  color: var(--text-primary);
+  border-color: var(--brand-accent);
+  background: var(--surface-page);
+}
+
+.reconciler-app :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid var(--brand-secondary);
+  outline-offset: 2px;
+}
+
+.reconciler-app :is(.reconciler-section-code, .reconciler-notice-meta) {
+  color: var(--text-secondary);
+}
+
+.reconciler-app .reconciler-section-item.impacted .reconciler-section-code {
+  color: var(--text-primary);
+}
+
+.reconciler-app .reconciler-redline :is(ins, del) {
+  color: var(--text-primary);
+  background: var(--surface-page);
+  text-decoration-color: var(--brand-accent);
+}
