@@ -93,7 +93,10 @@
 
 .reconciler-button:disabled {
   cursor: not-allowed;
-  opacity: .5;
+  color: #334155;
+  border-color: #94a3b8;
+  background: #e2e8f0;
+  opacity: 1;
 }
 
 .reconciler-button-primary {
@@ -125,66 +128,6 @@
   color: #a4444b;
   border-color: #f0d7d9;
   background: #fff;
-}
-
-.reconciler-checklist-toggle {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  margin-top: 20px;
-  color: #43516c;
-  text-align: left;
-  border: 1px solid #e0e5ef;
-  border-radius: 9px;
-  background: #fff;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.reconciler-checklist-toggle > svg:first-child {
-  color: #586dba;
-}
-
-.reconciler-checklist-toggle > svg:last-child {
-  margin-left: auto;
-}
-
-.reconciler-checklist-count {
-  padding: 3px 7px;
-  color: #66748c;
-  border-radius: 99px;
-  background: #f1f3f8;
-  font-size: 9px;
-}
-
-.reconciler-checklist {
-  display: grid;
-  gap: 8px;
-  padding: 13px 15px;
-  margin: 0;
-  list-style: none;
-  border: 1px solid #e0e5ef;
-  border-top: 0;
-  border-radius: 0 0 9px 9px;
-  background: #fff;
-}
-
-.reconciler-checklist li {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  color: #53617a;
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-.reconciler-checklist li svg {
-  flex: 0 0 auto;
-  margin-top: 1px;
-  color: #38835c;
 }
 
 .reconciler-storage-warning {
@@ -232,7 +175,7 @@
 .reconciler-panel-heading > span {
   min-width: 22px;
   padding: 3px 6px;
-  color: #70809a;
+  color: #0f172a;
   text-align: center;
   border-radius: 20px;
   background: #f2f4f8;
@@ -688,9 +631,9 @@
 
 .reconciler-document-slot-dropzone {
   display: flex;
-  height: 160px;
-  min-height: 160px;
-  flex: 0 0 160px;
+  height: 144px;
+  min-height: 144px;
+  flex: 0 0 144px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -771,9 +714,9 @@
 }
 
 .reconciler-addendum-dropzone {
-  height: 160px;
-  min-height: 160px;
-  flex: 0 0 160px;
+  height: 144px;
+  min-height: 144px;
+  flex: 0 0 144px;
 }
 
 .reconciler-addendum-pills {
@@ -799,7 +742,7 @@
 .reconciler-compare-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   padding: 12px 14px;
   margin-top: 14px;
@@ -811,6 +754,7 @@
 .reconciler-compare-readiness {
   display: grid;
   gap: 4px;
+  margin-right: auto;
   color: #485975;
   font-size: 10px;
   line-height: 1.5;
@@ -967,12 +911,6 @@
   font-weight: 400;
 }
 
-.reconciler-checklist-toggle {
-  border-color: var(--sbisif-border);
-  border-radius: 12px;
-}
-
-.reconciler-checklist-toggle > svg:first-child,
 .reconciler-document-slot-dropzone > svg,
 .reconciler-uploaded-document > svg {
   color: var(--sbisif-navy);
@@ -1083,7 +1021,7 @@
 
 .reconciler-upload-boxes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
   gap: 24px;
 }
@@ -1718,23 +1656,12 @@
   background: color-mix(in oklch, var(--destructive) 14%, var(--card));
 }
 
-.reconciler-app :is(.reconciler-checklist-toggle, .reconciler-sample-banner, .reconciler-framework-summary) {
+.reconciler-app :is(.reconciler-sample-banner, .reconciler-framework-summary) {
   color: var(--foreground);
   border-color: var(--border);
   background: var(--card);
 }
 
-.reconciler-app .reconciler-checklist-count {
-  color: var(--primary);
-  background: var(--accent);
-}
-
-.reconciler-app .reconciler-checklist {
-  border-color: var(--border);
-  background: var(--muted);
-}
-
-.reconciler-app .reconciler-checklist li,
 .reconciler-app .reconciler-compare-readiness > span {
   color: var(--muted-foreground);
 }
@@ -1774,7 +1701,7 @@
   border-bottom-color: var(--primary);
 }
 
-.reconciler-app :is(.reconciler-section-tag, .reconciler-section-tag.approved, .reconciler-section-count, .reconciler-checklist-toggle > svg:first-child) {
+.reconciler-app :is(.reconciler-section-tag, .reconciler-section-tag.approved, .reconciler-section-count) {
   color: var(--secondary);
 }
 
@@ -2075,7 +2002,7 @@
 
 .reconciler-audit-tabs button span {
   font-size: 9px;
-  opacity: .8;
+  opacity: 1;
 }
 
 .reconciler-audit-summary {
@@ -2171,6 +2098,49 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.reconciler-app :is(p, small, label, li, th, td, .reconciler-muted,
+  .reconciler-eyebrow, .reconciler-field-hint, .reconciler-review-time,
+  .reconciler-upload-summary, .reconciler-empty-state span) {
+  color: var(--muted-foreground);
+}
+
+.reconciler-app :is(h1, h2, h3, h4, strong) {
+  color: var(--foreground);
+}
+
+.reconciler-app :is(.reconciler-upload-strip, .reconciler-upload-box,
+  .reconciler-sidebar, .reconciler-review-panel, .reconciler-preview-panel,
+  .reconciler-preview-document, .reconciler-modal, .reconciler-framework-summary) {
+  border-color: var(--border);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.reconciler-app .reconciler-compare-bar {
+  border-color: var(--border);
+  background: var(--card);
+}
+
+.reconciler-app .reconciler-upload-boxes {
+  align-items: stretch;
+}
+
+.reconciler-app .reconciler-upload-box {
+  height: 100%;
+}
+
+.reconciler-app :is(.reconciler-document-slot-dropzone, .reconciler-addendum-dropzone) {
+  height: 144px;
+  min-height: 144px;
+  flex-basis: 144px;
+}
+
+@media (min-width: 1024px) {
+  .reconciler-app .reconciler-upload-boxes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .reconciler-audit-comparison article {

@@ -146,7 +146,6 @@ export function DocumentReconcilerWorkbench() {
   const [activeSidebarTab, setActiveSidebarTab] = useState<'amendments' | 'audit'>('amendments')
   const [selectedMandateId, setSelectedMandateId] = useState('')
   const [uploadsCollapsed, setUploadsCollapsed] = useState(false)
-  const [checklistExpanded, setChecklistExpanded] = useState(false)
   const [busy, setBusy] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [reconciliationMessage, setReconciliationMessage] = useState('')
@@ -732,7 +731,7 @@ export function DocumentReconcilerWorkbench() {
       <div className="reconciler-app">
       <section className="reconciler-control-panel">
         <div className="reconciler-title-row">
-          <div><p className="reconciler-eyebrow">REGULATORY DOCUMENT WORKSPACE</p><h1>Document Reconciler</h1></div>
+          <div><p className="reconciler-eyebrow">REGULATORY DOCUMENT WORKSPACE</p></div>
           <div className="reconciler-controls">
             <label className="reconciler-select-wrap" aria-label="Select master circular">
               <select value={framework.id} onChange={(event) => changeFramework(event.target.value)}>
@@ -752,10 +751,6 @@ export function DocumentReconcilerWorkbench() {
             <button type="button" className="reconciler-button reconciler-button-danger" disabled={isEmptyWorkspace(workspace)} onClick={clearSession}>Clear Session</button>
           </div>
         </div>
-        <button type="button" className="reconciler-checklist-toggle" aria-expanded={checklistExpanded} onClick={() => setChecklistExpanded(!checklistExpanded)}>
-          <ShieldCheck size={16} /><span>Circular Compliance Checklist</span><span className="reconciler-checklist-count">{framework.complianceChecklist.length} checks</span><ChevronDown size={15} />
-        </button>
-        {checklistExpanded && <ul className="reconciler-checklist">{framework.complianceChecklist.map((item) => <li key={item}><Check size={14} />{item}</li>)}</ul>}
       </section>
 
       {(uploadError || storageError) && <div className="reconciler-storage-warning" role="status">{uploadError || storageError}</div>}
